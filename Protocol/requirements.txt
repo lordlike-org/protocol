@@ -1,8 +1,7 @@
-python-telegram-bot==13.7
+python-telegram-bot~=21.3
 SQLAlchemy==1.4.22
 psycopg2-binary==2.9.3
 python-dotenv==0.18.0
-
 pip~=23.3.2
 wheel~=0.42.0
 tornado~=6.4
@@ -22,3 +21,12 @@ MarkupSafe~=2.1.5
 click~=8.1.7
 alembic~=1.13.1
 legacy~=0.1.7
+db~=0.1.1
+typing_extensions~=4.12.2
+Django~=5.0.6
+asgiref~=3.8.1
+sqlparse~=0.5.0
+attrs~=23.2.0
+requests~=2.32.3
+web3~=6.19.0
+mnemonic~=0.21
