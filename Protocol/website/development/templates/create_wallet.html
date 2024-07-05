@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Wallet</title>
+    <style>
+    </style>
+</head>
+<body>
+    <h2>Confirm your EVM wallet</h2>
+    <p><strong>Chain:</strong> <span id="chainDisplay"></span></p>
+    <p><strong>Address:</strong> <span id="addressDisplay"></span></p>
+    <p><strong>Seed Phrase:</strong></p>
+    <textarea id="seedPhrase" readonly style="display: none;"></textarea>
+    <button onclick="showSeedPhrase()">Show Seed Phrase</button>
+    <button onclick="copyToClipboard()">Copy Seed Phrase</button>
+
+    <form id="walletForm" method="POST" action="{% url 'wallet_created' %}">
+        {% csrf_token %}
+        <input type="hidden" name="address" id="addressInput">
+        <input type="hidden" name="chain" id="chainInput">
+        <button type="submit" id="confirmBtn" disabled>OK</button>
+    </form>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const address = urlParams.get('address');
+        const chain = urlParams.get('chain');
+        const encryptedSeedPhrase = urlParams.get('seed_phrase');
+
+        if (address) {
+            document.getElementById('addressDisplay').textContent = address;
+            document.getElementById('addressInput').value = address;
+        } else {
+            alert('Address not provided');
+        }
+
+        if (chain) {
+            document.getElementById('chainDisplay').textContent = chain;
+            document.getElementById('chainInput').value = chain;
+        } else {
+            alert('Chain not provided');
+        }
+
+        const seedPhraseArea = document.getElementById('seedPhrase');
+        const confirmBtn = document.getElementById('confirmBtn');
+
+        function showSeedPhrase() {
+            const password = prompt("Enter the password to decrypt Seed Phrase:");
+            if (password) {
+                try {
+                    const seedPhrase = CryptoJS.AES.decrypt(decodeURIComponent(encryptedSeedPhrase), password).toString(CryptoJS.enc.Utf8);
+                    if (!seedPhrase) {
+                        throw new Error('Failed to decrypt seed phrase');
+                    }
+                    seedPhraseArea.value = seedPhrase;
+                    seedPhraseArea.style.display = 'block';
+                    confirmBtn.disabled = false;
+                } catch (error) {
+                    alert("Invalid password or decryption error!");
+                }
+            }
+        }
+
+        function copyToClipboard() {
+            if (seedPhraseArea.style.display === 'block') {
+                seedPhraseArea.select();
+                document.execCommand('copy');
+                alert("Seed phrase copied to clipboard!");
+            } else {
+                alert("First show the seed phrase.");
+            }
+        }
+    </script>
+</body>
+</html>
