@@ -52,7 +52,6 @@
 </head>
 <body>
     <h2>Wallet Created Successfully</h2>
-    <p><strong>Chain:</strong> {{ chain }}</p>
     <p><strong>Address:</strong> {{ address }}</p>
     <h3>Balances:</h3>
     <p><strong>Ethereum (ETH):</strong> {{ balance_eth }} ETH</p>
@@ -66,10 +65,10 @@
     </ul>
     <div class="buttons-container">
         <button class="wallet-button" onclick="showModal('eth')">Send ETH</button>
-        <button class="wallet-button" onclick="showModal('token')">Send Tokens</button>
+        <button class="wallet-button" onclick="showModal('bnb')">Send BNB</button>
     </div>
 
-<!-- Modal window for sending ETH -->
+    <!-- Modal window for sending ETH -->
     <div id="ethModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('eth')">&times;</span>
@@ -77,33 +76,36 @@
             <p>Recipient Address:</p>
             <input type="text" id="ethRecipient" />
             <p>Amount in ETH:</p>
-            <input type="number" id="ethAmount" oninput="updateUsdEquivalent(); calculateGas(); checkFunds();" />
-            <p>Equivalent in USD: <span id="usdEquivalent">0.00</span></p>
-            <p>Gas Fee: <span id="gasFee">0.00</span> ETH (<span id="gasFeeUsd">0.00</span> USD)</p>
-            <p>Total with Gas: <span id="totalWithGas">0.00</span> ETH (<span id="totalWithGasUsd">0.00</span> USD)</p>
-            <p class="error" id="fundsError" style="display:none;">Insufficient funds for the transaction.</p>
+            <input type="number" id="ethAmount" oninput="updateUsdEquivalent('eth'); calculateGas('eth'); checkFunds('eth');" />
+            <p>Equivalent in USD: <span id="ethUsdEquivalent">0.00</span></p>
+            <p>Gas Fee: <span id="ethGasFee">0.00</span> ETH (<span id="ethGasFeeUsd">0.00</span> USD)</p>
+            <p>Total with Gas: <span id="ethTotalWithGas">0.00</span> ETH (<span id="ethTotalWithGasUsd">0.00</span> USD)</p>
+            <p class="error" id="ethFundsError" style="display:none;">Insufficient funds for the transaction.</p>
             <p>Enter password:</p>
             <input type="password" id="ethPassword" /><br>
             <button onclick="sendETH()">Send</button>
         </div>
     </div>
 
-    <!-- Modal window for sending tokens -->
-    <div id="tokenModal" class="modal">
+    <!-- Modal window for sending BNB -->
+    <div id="bnbModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('token')">&times;</span>
-            <h2>Send Tokens</h2>
+            <span class="close" onclick="closeModal('bnb')">&times;</span>
+            <h2>Send BNB</h2>
             <p>Recipient Address:</p>
-            <input type="text" id="tokenRecipient" />
-            <p>Token:</p>
-            <input type="text" id="tokenName" />
-            <p>Amount:</p>
-            <input type="number" id="tokenAmount" />
+            <input type="text" id="bnbRecipient" />
+            <p>Amount in BNB:</p>
+            <input type="number" id="bnbAmount" oninput="updateUsdEquivalent('bnb'); calculateGas('bnb'); checkFunds('bnb');" />
+            <p>Equivalent in USD: <span id="bnbUsdEquivalent">0.00</span></p>
+            <p>Gas Fee: <span id="bnbGasFee">0.00</span> BNB (<span id="bnbGasFeeUsd">0.00</span> USD)</p>
+            <p>Total with Gas: <span id="bnbTotalWithGas">0.00</span> BNB (<span id="bnbTotalWithGasUsd">0.00</span> USD)</p>
+            <p class="error" id="bnbFundsError" style="display:none;">Insufficient funds for the transaction.</p>
             <p>Enter password:</p>
-            <input type="password" id="tokenPassword" /><br>
-            <button onclick="sendToken()">Send</button>
+            <input type="password" id="bnbPassword" /><br>
+            <button onclick="sendBNB()">Send</button>
         </div>
     </div>
+
 
     <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
@@ -119,51 +121,53 @@
         };
 
         let ethToUsdRate = 0;
+        let bnbToUsdRate = 0;
         let gasPrice = 0;
         let gasLimit = 21000; // Typically 21000 for ETH transfer
         let ethBalance = parseFloat('{{ balance_eth }}'); // Assuming the balance is passed from the server
+        let bnbBalance = parseFloat('{{ balance_bnb }}'); // Assuming the balance is passed from the server
 
-        async function fetchEthToUsdRate() {
+        async function fetchUsdRates() {
             try {
-                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
+                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum,binancecoin&vs_currencies=usd');
                 const data = await response.json();
                 ethToUsdRate = data.ethereum.usd;
-                console.log('ETH to USD rate:', ethToUsdRate); // Debug log
+                bnbToUsdRate = data.binancecoin.usd;
             } catch (error) {
-                console.error('Error fetching ETH to USD rate:', error);
+                console.error('Error fetching USD rates:', error);
             }
         }
 
-        async function fetchGasPrice() {
+        async function fetchGasPrice(chain) {
             try {
-                const provider = new ethers.providers.JsonRpcProvider(RPC_URLS['eth']);
+                const provider = new ethers.providers.JsonRpcProvider(RPC_URLS[chain]);
                 gasPrice = await provider.getGasPrice();
                 gasPrice = parseFloat(ethers.utils.formatUnits(gasPrice, 'gwei'));
-                calculateGas();
+                calculateGas(chain);
             } catch (error) {
                 console.error('Error fetching gas price:', error);
             }
         }
 
-        function calculateGas() {
-            const ethAmount = document.getElementById('ethAmount').value;
-            const gasFeeElement = document.getElementById('gasFee');
-            const gasFeeUsdElement = document.getElementById('gasFeeUsd');
-            const totalWithGasElement = document.getElementById('totalWithGas');
-            const totalWithGasUsdElement = document.getElementById('totalWithGasUsd');
-            const ethAmountNumber = parseFloat(ethAmount);
+        function calculateGas(chain) {
+            const amount = document.getElementById(chain + 'Amount').value;
+            const gasFeeElement = document.getElementById(chain + 'GasFee');
+            const gasFeeUsdElement = document.getElementById(chain + 'GasFeeUsd');
+            const totalWithGasElement = document.getElementById(chain + 'TotalWithGas');
+            const totalWithGasUsdElement = document.getElementById(chain + 'TotalWithGasUsd');
+            const amountNumber = parseFloat(amount);
+            const usdRate = chain === 'eth' ? ethToUsdRate : bnbToUsdRate;
 
-            if (!isNaN(ethAmountNumber) && ethAmountNumber > 0) {
-                const gasFee = (gasPrice * gasLimit) / 1e9; // Convert gas fee to ETH
-                const totalWithGas = ethAmountNumber + gasFee;
-                const gasFeeUsd = gasFee * ethToUsdRate;
-                const totalWithGasUsd = totalWithGas * ethToUsdRate;
+            if (!isNaN(amountNumber) && amountNumber > 0) {
+                const gasFee = (gasPrice * gasLimit) / 1e9; // Convert gas fee to respective currency
+                const totalWithGas = amountNumber + gasFee;
+                const gasFeeUsd = gasFee * usdRate;
+                const totalWithGasUsd = totalWithGas * usdRate;
 
                 gasFeeElement.textContent = gasFee.toFixed(6);
                 gasFeeUsdElement.textContent = gasFeeUsd.toFixed(2);
                 totalWithGasElement.textContent = totalWithGas.toFixed(6);
                 totalWithGasUsdElement.textContent = totalWithGasUsd.toFixed(2);
-
             } else {
                 gasFeeElement.textContent = '0.00';
                 gasFeeUsdElement.textContent = '0.00';
@@ -172,14 +176,16 @@
             }
         }
 
-        function checkFunds() {
-            const ethAmount = document.getElementById('ethAmount').value;
-            const ethAmountNumber = parseFloat(ethAmount);
-            const totalWithGas = parseFloat(document.getElementById('totalWithGas').textContent);
-            const fundsError = document.getElementById('fundsError');
+        function checkFunds(chain) {
+            const amount = document.getElementById(chain + 'Amount').value;
+            const amountNumber = parseFloat(amount);
+            const totalWithGas = parseFloat(document.getElementById(chain + 'TotalWithGas').textContent);
+            const fundsError = document.getElementById(chain + 'FundsError');
 
-            if (!isNaN(ethAmountNumber) && ethAmountNumber > 0) {
-                if (ethBalance < totalWithGas) {
+            const balance = chain === 'eth' ? ethBalance : bnbBalance;
+
+            if (!isNaN(amountNumber) && amountNumber > 0) {
+                if (balance < totalWithGas) {
                     fundsError.style.display = 'block';
                 } else {
                     fundsError.style.display = 'none';
@@ -190,16 +196,16 @@
         }
 
         function showModal(type) {
-            const modal = document.getElementById(type === 'eth' ? 'ethModal' : 'tokenModal');
+            const modal = document.getElementById(type + 'Modal');
             modal.style.display = 'block';
-            if (type === 'eth') {
-                fetchEthToUsdRate();
-                fetchGasPrice();
+            if (type === 'eth' || type === 'bnb') {
+                fetchUsdRates();
+                fetchGasPrice(type);
             }
         }
 
         function closeModal(type) {
-            const modal = document.getElementById(type === 'eth' ? 'ethModal' : 'tokenModal');
+            const modal = document.getElementById(type + 'Modal');
             modal.style.display = 'none';
         }
 
@@ -209,23 +215,24 @@
             }
         }
 
-        function updateUsdEquivalent() {
-            const ethAmount = document.getElementById('ethAmount').value;
-            const usdEquivalent = document.getElementById('usdEquivalent');
-            const ethAmountNumber = parseFloat(ethAmount);
+        document.addEventListener('DOMContentLoaded', (event) => {
+            fetchUsdRates(); // Fetch the USD rates when the page loads
+            fetchGasPrice('eth'); // Fetch the Gas Price when the page loads
+        });
 
-            if (!isNaN(ethAmountNumber) && ethAmountNumber > 0) {
-                const usdValue = (ethAmountNumber * ethToUsdRate).toFixed(2);
-                usdEquivalent.textContent = usdValue;
+        function updateUsdEquivalent(chain) {
+            const amount = document.getElementById(chain + 'Amount').value;
+            const usdEquivalentElement = document.getElementById(chain + 'UsdEquivalent');
+            const amountNumber = parseFloat(amount);
+            const usdRate = chain === 'eth' ? ethToUsdRate : bnbToUsdRate;
+
+            if (!isNaN(amountNumber) && amountNumber > 0) {
+                const usdValue = (amountNumber * usdRate).toFixed(2);
+                usdEquivalentElement.textContent = usdValue;
             } else {
-                usdEquivalent.textContent = '0.00';
+                usdEquivalentElement.textContent = '0.00';
             }
         }
-
-        document.addEventListener('DOMContentLoaded', (event) => {
-            fetchEthToUsdRate(); // Fetch the ETH to USD rate when the page loads
-            fetchGasPrice(); // Fetch the Gas Price when the page loads
-        });
 
         async function sendETH() {
             const recipient = document.getElementById('ethRecipient').value;
@@ -239,9 +246,20 @@
 
             try {
                 // Fetch the latest gas price before sending the transaction
-                await fetchGasPrice();
+                await fetchGasPrice('eth');
 
-                const decryptedPrivateKey = CryptoJS.AES.decrypt(encryptedKey, password).toString(CryptoJS.enc.Utf8);
+                let decryptedPrivateKey;
+                try {
+                    decryptedPrivateKey = CryptoJS.AES.decrypt(encryptedKey, password).toString(CryptoJS.enc.Utf8);
+                    if (!decryptedPrivateKey) {
+                        throw new Error("Decryption failed");
+                    }
+                } catch (decryptionError) {
+                    console.error("Decryption error:", decryptionError);
+                    alert('Error decrypting the private key. Please check your password and try again.');
+                    return;
+                }
+
                 const provider = new ethers.providers.JsonRpcProvider(RPC_URLS['eth']); // Using RPC URL for the Ethereum network
                 const wallet = new ethers.Wallet(decryptedPrivateKey, provider);
 
@@ -269,49 +287,58 @@
             }
         }
 
-        async function sendToken() {
-            const recipient = document.getElementById('tokenRecipient').value;
-            const tokenName = document.getElementById('tokenName').value;
-            const amount = document.getElementById('tokenAmount').value;
-            const password = document.getElementById('tokenPassword').value;
+        async function sendBNB() {
+            const recipient = document.getElementById('bnbRecipient').value;
+            const amount = document.getElementById('bnbAmount').value;
+            const password = document.getElementById('bnbPassword').value;
 
-            if (!recipient || !amount || !tokenName || !password) {
-                alert('Please enter recipient address, token name, amount, and password.');
+            if (!recipient || !amount || !password) {
+                alert('Please enter recipient address, amount, and password.');
                 return;
             }
 
             try {
-                const token = TOKENS.find(t => t.name.toUpperCase() === tokenName.toUpperCase());
-                if (!token) {
-                    alert('Token not found.');
+                // Fetch the latest gas price before sending the transaction
+                await fetchGasPrice('bnb');
+
+                let decryptedPrivateKey;
+                try {
+                    decryptedPrivateKey = CryptoJS.AES.decrypt(encryptedKey, password).toString(CryptoJS.enc.Utf8);
+                    if (!decryptedPrivateKey) {
+                        throw new Error("Decryption failed");
+                    }
+                } catch (decryptionError) {
+                    console.error("Decryption error:", decryptionError);
+                    alert('Error decrypting the private key. Please check your password and try again.');
                     return;
                 }
 
-                const decryptedPrivateKey = CryptoJS.AES.decrypt(encryptedKey, password).toString(CryptoJS.enc.Utf8);
-                const provider = new ethers.providers.JsonRpcProvider(RPC_URLS['eth']); // Using RPC URL for the Ethereum network
+                const provider = new ethers.providers.JsonRpcProvider(RPC_URLS['bnb']); // Using RPC URL for the BSC network
                 const wallet = new ethers.Wallet(decryptedPrivateKey, provider);
 
-                const tokenContract = new ethers.Contract(token.address, ERC20_ABI, wallet);
-                const transactionResponse = await tokenContract.transfer(recipient, ethers.utils.parseUnits(amount, token.decimals));
+                const gasPriceWei = ethers.utils.parseUnits(gasPrice.toString(), 'gwei');
+                const tx = {
+                    to: recipient,
+                    value: ethers.utils.parseEther(amount),
+                    gasPrice: gasPriceWei,
+                    gasLimit: gasLimit
+                };
 
+                const balance = await wallet.getBalance();
+                const totalCost = tx.value.add(gasPriceWei.mul(gasLimit));
+                if (balance.lt(totalCost)) {
+                    alert('Insufficient funds for the transaction.');
+                    return;
+                }
+
+                const transactionResponse = await wallet.sendTransaction(tx);
                 alert('Transaction sent: ' + transactionResponse.hash);
-                closeModal('token');
+                closeModal('bnb');
             } catch (error) {
-                console.error("Error sending token:", error);
-                alert('Error sending token: ' + error.message);
+                console.error("Error sending BNB:", error);
+                alert('Error sending BNB: ' + error.message);
             }
         }
-
-        const TOKENS = [
-            { name: 'USDT', address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', decimals: 6 },
-            { name: 'USDC', address: '0xA0b86991c6218b36c1d19D4a2e9EB0cE3606EB48', decimals: 6 },
-        ];
-
-        const ERC20_ABI = [
-            "function balanceOf(address owner) view returns (uint256)",
-            "function transfer(address to, uint256 value) returns (bool)",
-            "function decimals() view returns (uint8)"
-        ];
     </script>
 </body>
 </html>
