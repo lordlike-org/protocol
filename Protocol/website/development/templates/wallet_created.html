@@ -66,6 +66,7 @@
     <div class="buttons-container">
         <button class="wallet-button" onclick="showModal('eth')">Send ETH</button>
         <button class="wallet-button" onclick="showModal('bnb')">Send BNB</button>
+        <button class="wallet-button" onclick="showModal('matic')">Send MATIC</button>
     </div>
 
     <!-- Modal window for sending ETH -->
@@ -106,6 +107,24 @@
         </div>
     </div>
 
+    <!-- Modal window for sending MATIC -->
+    <div id="maticModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('matic')">&times;</span>
+            <h2>Send MATIC</h2>
+            <p>Recipient Address:</p>
+            <input type="text" id="maticRecipient" />
+            <p>Amount in MATIC:</p>
+            <input type="number" id="maticAmount" oninput="updateUsdEquivalent('matic'); calculateGas('matic'); checkFunds('matic');" />
+            <p>Equivalent in USD: <span id="maticUsdEquivalent">0.00</span></p>
+            <p>Gas Fee: <span id="maticGasFee">0.00</span> MATIC (<span id="maticGasFeeUsd">0.00</span> USD)</p>
+            <p>Total with Gas: <span id="maticTotalWithGas">0.00</span> MATIC (<span id="maticTotalWithGasUsd">0.00</span> USD)</p>
+            <p class="error" id="maticFundsError" style="display:none;">Insufficient funds for the transaction.</p>
+            <p>Enter password:</p>
+            <input type="password" id="maticPassword" /><br>
+            <button onclick="sendMATIC()">Send</button>
+        </div>
+    </div>
 
     <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
@@ -117,22 +136,25 @@
         const RPC_URLS = {
             eth: 'https://mainnet.infura.io/v3/a4c60cf1bd7e4c288d9221144f9efbe2',
             bnb: 'https://bsc-dataseed.binance.org/',
-            matic: 'https://polygon-rpc.com/'
+            matic: 'https://polygon-rpc.com'
         };
 
         let ethToUsdRate = 0;
         let bnbToUsdRate = 0;
+        let maticToUsdRate = 0;
         let gasPrice = 0;
         let gasLimit = 21000; // Typically 21000 for ETH transfer
         let ethBalance = parseFloat('{{ balance_eth }}'); // Assuming the balance is passed from the server
         let bnbBalance = parseFloat('{{ balance_bnb }}'); // Assuming the balance is passed from the server
+        let maticBalance = parseFloat('{{ balance_matic }}'); // Assuming the balance is passed from the server
 
         async function fetchUsdRates() {
             try {
-                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum,binancecoin&vs_currencies=usd');
+                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum,binancecoin,matic-network&vs_currencies=usd');
                 const data = await response.json();
                 ethToUsdRate = data.ethereum.usd;
                 bnbToUsdRate = data.binancecoin.usd;
+                maticToUsdRate = data['matic-network'].usd;
             } catch (error) {
                 console.error('Error fetching USD rates:', error);
             }
@@ -156,7 +178,7 @@
             const totalWithGasElement = document.getElementById(chain + 'TotalWithGas');
             const totalWithGasUsdElement = document.getElementById(chain + 'TotalWithGasUsd');
             const amountNumber = parseFloat(amount);
-            const usdRate = chain === 'eth' ? ethToUsdRate : bnbToUsdRate;
+            const usdRate = chain === 'eth' ? ethToUsdRate : chain === 'bnb' ? bnbToUsdRate : maticToUsdRate;
 
             if (!isNaN(amountNumber) && amountNumber > 0) {
                 const gasFee = (gasPrice * gasLimit) / 1e9; // Convert gas fee to respective currency
@@ -182,7 +204,7 @@
             const totalWithGas = parseFloat(document.getElementById(chain + 'TotalWithGas').textContent);
             const fundsError = document.getElementById(chain + 'FundsError');
 
-            const balance = chain === 'eth' ? ethBalance : bnbBalance;
+            const balance = chain === 'eth' ? ethBalance : chain === 'bnb' ? bnbBalance : maticBalance;
 
             if (!isNaN(amountNumber) && amountNumber > 0) {
                 if (balance < totalWithGas) {
@@ -198,7 +220,7 @@
         function showModal(type) {
             const modal = document.getElementById(type + 'Modal');
             modal.style.display = 'block';
-            if (type === 'eth' || type === 'bnb') {
+            if (type === 'eth' || type === 'bnb' || type === 'matic') {
                 fetchUsdRates();
                 fetchGasPrice(type);
             }
@@ -224,7 +246,7 @@
             const amount = document.getElementById(chain + 'Amount').value;
             const usdEquivalentElement = document.getElementById(chain + 'UsdEquivalent');
             const amountNumber = parseFloat(amount);
-            const usdRate = chain === 'eth' ? ethToUsdRate : bnbToUsdRate;
+            const usdRate = chain === 'eth' ? ethToUsdRate : chain === 'bnb' ? bnbToUsdRate : maticToUsdRate;
 
             if (!isNaN(amountNumber) && amountNumber > 0) {
                 const usdValue = (amountNumber * usdRate).toFixed(2);
@@ -337,6 +359,59 @@
             } catch (error) {
                 console.error("Error sending BNB:", error);
                 alert('Error sending BNB: ' + error.message);
+            }
+        }
+
+        async function sendMATIC() {
+            const recipient = document.getElementById('maticRecipient').value;
+            const amount = document.getElementById('maticAmount').value;
+            const password = document.getElementById('maticPassword').value;
+
+            if (!recipient || !amount || !password) {
+                alert('Please enter recipient address, amount, and password.');
+                return;
+            }
+
+            try {
+                // Fetch the latest gas price before sending the transaction
+                await fetchGasPrice('matic');
+
+                let decryptedPrivateKey;
+                try {
+                    decryptedPrivateKey = CryptoJS.AES.decrypt(encryptedKey, password).toString(CryptoJS.enc.Utf8);
+                    if (!decryptedPrivateKey) {
+                        throw new Error("Decryption failed");
+                    }
+                } catch (decryptionError) {
+                    console.error("Decryption error:", decryptionError);
+                    alert('Error decrypting the private key. Please check your password and try again.');
+                    return;
+                }
+
+                const provider = new ethers.providers.JsonRpcProvider(RPC_URLS['matic']); // Using RPC URL for the Polygon network
+                const wallet = new ethers.Wallet(decryptedPrivateKey, provider);
+
+                const gasPriceWei = ethers.utils.parseUnits(gasPrice.toString(), 'gwei');
+                const tx = {
+                    to: recipient,
+                    value: ethers.utils.parseEther(amount),
+                    gasPrice: gasPriceWei,
+                    gasLimit: gasLimit
+                };
+
+                const balance = await wallet.getBalance();
+                const totalCost = tx.value.add(gasPriceWei.mul(gasLimit));
+                if (balance.lt(totalCost)) {
+                    alert('Insufficient funds for the transaction.');
+                    return;
+                }
+
+                const transactionResponse = await wallet.sendTransaction(tx);
+                alert('Transaction sent: ' + transactionResponse.hash);
+                closeModal('matic');
+            } catch (error) {
+                console.error("Error sending MATIC:", error);
+                alert('Error sending MATIC: ' + error.message);
             }
         }
     </script>
