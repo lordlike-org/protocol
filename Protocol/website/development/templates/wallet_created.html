@@ -59,10 +59,13 @@
     <p><strong>Polygon (MATIC):</strong> {{ balance_matic }} MATIC</p>
     <h3>Token Balances:</h3>
     <ul>
-        {% for token, balance in token_balances.items %}
-            <li><strong>{{ token }}:</strong> {{ balance }}</li>
-        {% endfor %}
-    </ul>
+    {% for token, balance in token_balances.items %}
+        <li><strong>{{ token }}:</strong> {{ balance }}</li>
+    {% endfor %}
+    <li><strong>USDT (Ethereum):</strong> {{ balance_usdt_eth }} USDT</li>
+    <li><strong>USDT (BSC):</strong> {{ balance_usdt_bnb }} USDT</li>
+    <li><strong>USDT (Polygon):</strong> {{ balance_usdt_matic }} USDT</li>
+</ul>
     <div class="buttons-container">
         <button class="wallet-button" onclick="showModal('eth')">Send ETH</button>
         <button class="wallet-button" onclick="showModal('bnb')">Send BNB</button>
