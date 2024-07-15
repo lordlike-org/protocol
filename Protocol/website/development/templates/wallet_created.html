@@ -57,7 +57,6 @@
     <p><strong>Ethereum (ETH):</strong> {{ balance_eth }} ETH</p>
     <p><strong>Binance Smart Chain (BNB):</strong> {{ balance_bnb }} BNB</p>
     <p><strong>Polygon (MATIC):</strong> {{ balance_matic }} MATIC</p>
-    <h3>Token Balances:</h3>
     <ul>
     {% for token, balance in token_balances.items %}
         <li><strong>{{ token }}:</strong> {{ balance }}</li>
@@ -65,67 +64,122 @@
     <li><strong>USDT (Ethereum):</strong> {{ balance_usdt_eth }} USDT</li>
     <li><strong>USDT (BSC):</strong> {{ balance_usdt_bnb }} USDT</li>
     <li><strong>USDT (Polygon):</strong> {{ balance_usdt_matic }} USDT</li>
-</ul>
+    </ul>
     <div class="buttons-container">
         <button class="wallet-button" onclick="showModal('eth')">Send ETH</button>
         <button class="wallet-button" onclick="showModal('bnb')">Send BNB</button>
         <button class="wallet-button" onclick="showModal('matic')">Send MATIC</button>
+        <button class="wallet-button" onclick="showModal('usdt_eth')">Send USDT (Ethereum)</button>
+        <button class="wallet-button" onclick="showModal('usdt_bnb')">Send USDT (BSC)</button>
+        <button class="wallet-button" onclick="showModal('usdt_matic')">Send USDT (Polygon)</button>
     </div>
 
     <!-- Modal window for sending ETH -->
-    <div id="ethModal" class="modal">
+<div id="ethModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('eth')">&times;</span>
+        <h2>Send ETH</h2>
+        <p>Recipient Address:</p>
+        <input type="text" id="ethRecipient" />
+        <p>Amount in ETH:</p>
+        <input type="number" id="ethAmount" oninput="updateUsdEquivalent('eth'); calculateGas('eth'); checkFunds('eth');" />
+        <p>Equivalent in USD: <span id="ethUsdEquivalent">0.00</span></p>
+        <p>Gas Fee: <span id="ethGasFee">0.00</span> ETH (<span id="ethGasFeeUsd">0.00</span> USD)</p>
+        <p>Total with Gas: <span id="ethTotalWithGas">0.00</span> ETH (<span id="ethTotalWithGasUsd">0.00</span> USD)</p>
+        <p class="error" id="ethFundsError" style="display:none;">Insufficient funds for the transaction.</p>
+        <p>Enter password:</p>
+        <input type="password" id="ethPassword" /><br>
+        <button onclick="sendETH()">Send</button>
+    </div>
+</div>
+
+<!-- Modal window for sending BNB -->
+<div id="bnbModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('bnb')">&times;</span>
+        <h2>Send BNB</h2>
+        <p>Recipient Address:</p>
+        <input type="text" id="bnbRecipient" />
+        <p>Amount in BNB:</p>
+        <input type="number" id="bnbAmount" oninput="updateUsdEquivalent('bnb'); calculateGas('bnb'); checkFunds('bnb');" />
+        <p>Equivalent in USD: <span id="bnbUsdEquivalent">0.00</span></p>
+        <p>Gas Fee: <span id="bnbGasFee">0.00</span> BNB (<span id="bnbGasFeeUsd">0.00</span> USD)</p>
+        <p>Total with Gas: <span id="bnbTotalWithGas">0.00</span> BNB (<span id="bnbTotalWithGasUsd">0.00</span> USD)</p>
+        <p class="error" id="bnbFundsError" style="display:none;">Insufficient funds for the transaction.</p>
+        <p>Enter password:</p>
+        <input type="password" id="bnbPassword" /><br>
+        <button onclick="sendBNB()">Send</button>
+    </div>
+</div>
+
+<!-- Modal window for sending MATIC -->
+<div id="maticModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('matic')">&times;</span>
+        <h2>Send MATIC</h2>
+        <p>Recipient Address:</p>
+        <input type="text" id="maticRecipient" />
+        <p>Amount in MATIC:</p>
+        <input type="number" id="maticAmount" oninput="updateUsdEquivalent('matic'); calculateGas('matic'); checkFunds('matic');" />
+        <p>Equivalent in USD: <span id="maticUsdEquivalent">0.00</span></p>
+        <p>Gas Fee: <span id="maticGasFee">0.00</span> MATIC (<span id="maticGasFeeUsd">0.00</span> USD)</p>
+        <p>Total with Gas: <span id="maticTotalWithGas">0.00</span> MATIC (<span id="maticTotalWithGasUsd">0.00</span> USD)</p>
+        <p class="error" id="maticFundsError" style="display:none;">Insufficient funds for the transaction.</p>
+        <p>Enter password:</p>
+        <input type="password" id="maticPassword" /><br>
+        <button onclick="sendMATIC()">Send</button>
+    </div>
+</div>
+
+
+    <!-- Modal window for sending USDT on Ethereum -->
+    <div id="usdt_ethModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('eth')">&times;</span>
-            <h2>Send ETH</h2>
+            <span class="close" onclick="closeModal('usdt_eth')">&times;</span>
+            <h2>Send USDT (Ethereum)</h2>
             <p>Recipient Address:</p>
-            <input type="text" id="ethRecipient" />
-            <p>Amount in ETH:</p>
-            <input type="number" id="ethAmount" oninput="updateUsdEquivalent('eth'); calculateGas('eth'); checkFunds('eth');" />
-            <p>Equivalent in USD: <span id="ethUsdEquivalent">0.00</span></p>
-            <p>Gas Fee: <span id="ethGasFee">0.00</span> ETH (<span id="ethGasFeeUsd">0.00</span> USD)</p>
-            <p>Total with Gas: <span id="ethTotalWithGas">0.00</span> ETH (<span id="ethTotalWithGasUsd">0.00</span> USD)</p>
-            <p class="error" id="ethFundsError" style="display:none;">Insufficient funds for the transaction.</p>
+            <input type="text" id="usdt_ethRecipient" />
+            <p>Amount in USDT:</p>
+            <input type="number" id="usdt_ethAmount" oninput="calculateUsdtGas('eth');" />
+            <p>Gas Fee: <span id="usdt_ethGasFee">0.00</span> ETH (<span id="usdt_ethGasFeeUsd">0.00</span> USD)</p>
+            <p>Total with Gas: <span id="usdt_ethTotalWithGas">0.00</span> USDT</p>
             <p>Enter password:</p>
-            <input type="password" id="ethPassword" /><br>
-            <button onclick="sendETH()">Send</button>
+            <input type="password" id="usdt_ethPassword" /><br>
+            <button onclick="sendUSDT('eth')">Send</button>
         </div>
     </div>
 
-    <!-- Modal window for sending BNB -->
-    <div id="bnbModal" class="modal">
+    <!-- Modal window for sending USDT on BSC -->
+    <div id="usdt_bnbModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('bnb')">&times;</span>
-            <h2>Send BNB</h2>
+            <span class="close" onclick="closeModal('usdt_bnb')">&times;</span>
+            <h2>Send USDT (BSC)</h2>
             <p>Recipient Address:</p>
-            <input type="text" id="bnbRecipient" />
-            <p>Amount in BNB:</p>
-            <input type="number" id="bnbAmount" oninput="updateUsdEquivalent('bnb'); calculateGas('bnb'); checkFunds('bnb');" />
-            <p>Equivalent in USD: <span id="bnbUsdEquivalent">0.00</span></p>
-            <p>Gas Fee: <span id="bnbGasFee">0.00</span> BNB (<span id="bnbGasFeeUsd">0.00</span> USD)</p>
-            <p>Total with Gas: <span id="bnbTotalWithGas">0.00</span> BNB (<span id="bnbTotalWithGasUsd">0.00</span> USD)</p>
-            <p class="error" id="bnbFundsError" style="display:none;">Insufficient funds for the transaction.</p>
+            <input type="text" id="usdt_bnbRecipient" />
+            <p>Amount in USDT:</p>
+            <input type="number" id="usdt_bnbAmount" oninput="calculateUsdtGas('bnb');" />
+            <p>Gas Fee: <span id="usdt_bnbGasFee">0.00</span> BNB (<span id="usdt_bnbGasFeeUsd">0.00</span> USD)</p>
+            <p>Total with Gas: <span id="usdt_bnbTotalWithGas">0.00</span> USDT</p>
             <p>Enter password:</p>
-            <input type="password" id="bnbPassword" /><br>
-            <button onclick="sendBNB()">Send</button>
+            <input type="password" id="usdt_bnbPassword" /><br>
+            <button onclick="sendUSDT('bnb')">Send</button>
         </div>
     </div>
 
-    <!-- Modal window for sending MATIC -->
-    <div id="maticModal" class="modal">
+    <!-- Modal window for sending USDT on Polygon -->
+    <div id="usdt_maticModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('matic')">&times;</span>
-            <h2>Send MATIC</h2>
+            <span class="close" onclick="closeModal('usdt_matic')">&times;</span>
+            <h2>Send USDT (Polygon)</h2>
             <p>Recipient Address:</p>
-            <input type="text" id="maticRecipient" />
-            <p>Amount in MATIC:</p>
-            <input type="number" id="maticAmount" oninput="updateUsdEquivalent('matic'); calculateGas('matic'); checkFunds('matic');" />
-            <p>Equivalent in USD: <span id="maticUsdEquivalent">0.00</span></p>
-            <p>Gas Fee: <span id="maticGasFee">0.00</span> MATIC (<span id="maticGasFeeUsd">0.00</span> USD)</p>
-            <p>Total with Gas: <span id="maticTotalWithGas">0.00</span> MATIC (<span id="maticTotalWithGasUsd">0.00</span> USD)</p>
-            <p class="error" id="maticFundsError" style="display:none;">Insufficient funds for the transaction.</p>
+            <input type="text" id="usdt_maticRecipient" />
+            <p>Amount in USDT:</p>
+            <input type="number" id="usdt_maticAmount" oninput="calculateUsdtGas('matic');" />
+            <p>Gas Fee: <span id="usdt_maticGasFee">0.00</span> MATIC (<span id="usdt_maticGasFeeUsd">0.00</span> USD)</p>
+            <p>Total with Gas: <span id="usdt_maticTotalWithGas">0.00</span> USDT</p>
             <p>Enter password:</p>
-            <input type="password" id="maticPassword" /><br>
-            <button onclick="sendMATIC()">Send</button>
+            <input type="password" id="usdt_maticPassword" /><br>
+            <button onclick="sendUSDT('matic')">Send</button>
         </div>
     </div>
 
@@ -140,6 +194,12 @@
             eth: 'https://mainnet.infura.io/v3/a4c60cf1bd7e4c288d9221144f9efbe2',
             bnb: 'https://bsc-dataseed.binance.org/',
             matic: 'https://polygon-rpc.com'
+        };
+
+        const USDT_CONTRACT_ADDRESSES = {
+            eth: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+            bnb: '0x55d398326f99059fF775485246999027B3197955',
+            matic: '0x3813e82e6f7098b9583FC0F33a962D02018B6803'
         };
 
         let ethToUsdRate = 0;
@@ -164,15 +224,17 @@
         }
 
         async function fetchGasPrice(chain) {
-            try {
-                const provider = new ethers.providers.JsonRpcProvider(RPC_URLS[chain]);
-                gasPrice = await provider.getGasPrice();
-                gasPrice = parseFloat(ethers.utils.formatUnits(gasPrice, 'gwei'));
-                calculateGas(chain);
-            } catch (error) {
-                console.error('Error fetching gas price:', error);
-            }
+    try {
+        const provider = new ethers.providers.JsonRpcProvider(RPC_URLS[chain]);
+        gasPrice = await provider.getGasPrice();
+        gasPrice = parseFloat(ethers.utils.formatUnits(gasPrice, 'gwei'));
+        if (chain === 'eth' || chain === 'bnb' || chain === 'matic') {
+            calculateGas(chain);
         }
+    } catch (error) {
+        console.error('Error fetching gas price:', error);
+    }
+}
 
         function calculateGas(chain) {
             const amount = document.getElementById(chain + 'Amount').value;
@@ -183,21 +245,55 @@
             const amountNumber = parseFloat(amount);
             const usdRate = chain === 'eth' ? ethToUsdRate : chain === 'bnb' ? bnbToUsdRate : maticToUsdRate;
 
+
             if (!isNaN(amountNumber) && amountNumber > 0) {
                 const gasFee = (gasPrice * gasLimit) / 1e9; // Convert gas fee to respective currency
+
                 const totalWithGas = amountNumber + gasFee;
                 const gasFeeUsd = gasFee * usdRate;
+
                 const totalWithGasUsd = totalWithGas * usdRate;
 
-                gasFeeElement.textContent = gasFee.toFixed(6);
-                gasFeeUsdElement.textContent = gasFeeUsd.toFixed(2);
+                gasFeeElement.textContent = gasFee.toFixed(4);
+                gasFeeUsdElement.textContent = gasFeeUsd.toFixed(4); // Change to 4 decimal places
                 totalWithGasElement.textContent = totalWithGas.toFixed(6);
                 totalWithGasUsdElement.textContent = totalWithGasUsd.toFixed(2);
+
             } else {
                 gasFeeElement.textContent = '0.00';
                 gasFeeUsdElement.textContent = '0.00';
                 totalWithGasElement.textContent = '0.00';
                 totalWithGasUsdElement.textContent = '0.00';
+            }
+        }
+
+        function calculateUsdtGas(chain) {
+            const amount = document.getElementById(`usdt_${chain}Amount`).value;
+            const gasFeeElement = document.getElementById(`usdt_${chain}GasFee`);
+            const gasFeeUsdElement = document.getElementById(`usdt_${chain}GasFeeUsd`);
+            const totalWithGasElement = document.getElementById(`usdt_${chain}TotalWithGas`);
+            const amountNumber = parseFloat(amount);
+            const usdRate = chain === 'eth' ? ethToUsdRate : chain === 'bnb' ? bnbToUsdRate : maticToUsdRate;
+
+
+            if (!isNaN(amountNumber) && amountNumber > 0) {
+                const gasFee = (gasPrice * gasLimit) / 1e9; // Convert gas fee to respective currency
+                console.log('Gas Fee:', gasFee);
+
+                const gasFeeUsd = gasFee * usdRate;
+                console.log('Gas Fee in USD:', gasFeeUsd);
+
+                gasFeeElement.textContent = gasFee.toFixed(6);
+                gasFeeUsdElement.textContent = gasFeeUsd.toFixed(6);
+
+                totalWithGasElement.textContent = (amountNumber + gasFee).toFixed(6);
+
+                console.log('Updated Gas Fee Element:', gasFeeElement.textContent);
+                console.log('Updated Gas Fee USD Element:', gasFeeUsdElement.textContent);
+            } else {
+                gasFeeElement.textContent = '0.00';
+                gasFeeUsdElement.textContent = '0.00';
+                totalWithGasElement.textContent = '0.00';
             }
         }
 
@@ -223,9 +319,17 @@
         function showModal(type) {
             const modal = document.getElementById(type + 'Modal');
             modal.style.display = 'block';
-            if (type === 'eth' || type === 'bnb' || type === 'matic') {
-                fetchUsdRates();
-                fetchGasPrice(type);
+            if (type === 'eth' || type === 'bnb' || type === 'matic' || type.startsWith('usdt')) {
+                fetchUsdRates().then(() => {
+                    fetchGasPrice(type.replace('usdt_', '')).then(() => {
+                        console.log('Gas price fetched and modal shown for:', type);
+                        if (type.startsWith('usdt')) {
+                            calculateUsdtGas(type.replace('usdt_', ''));
+                        } else {
+                            calculateGas(type);
+                        }
+                    });
+                });
             }
         }
 
@@ -242,7 +346,9 @@
 
         document.addEventListener('DOMContentLoaded', (event) => {
             fetchUsdRates(); // Fetch the USD rates when the page loads
-            fetchGasPrice('eth'); // Fetch the Gas Price when the page loads
+            fetchGasPrice('eth');
+            fetchGasPrice('bnb');
+            fetchGasPrice('matic'); // Fetch the Gas Price when the page loads
         });
 
         function updateUsdEquivalent(chain) {
@@ -417,6 +523,61 @@
                 alert('Error sending MATIC: ' + error.message);
             }
         }
+
+        async function sendUSDT(chain) {
+            const recipient = document.getElementById(`usdt_${chain}Recipient`).value;
+            const amount = document.getElementById(`usdt_${chain}Amount`).value;
+            const password = document.getElementById(`usdt_${chain}Password`).value;
+
+            if (!recipient || !amount || !password) {
+                alert('Please enter recipient address, amount, and password.');
+                return;
+            }
+
+            try {
+                let decryptedPrivateKey;
+                try {
+                    decryptedPrivateKey = CryptoJS.AES.decrypt(encryptedKey, password).toString(CryptoJS.enc.Utf8);
+                    if (!decryptedPrivateKey) {
+                        throw new Error("Decryption failed");
+                    }
+                } catch (decryptionError) {
+                    console.error("Decryption error:", decryptionError);
+                    alert('Error decrypting the private key. Please check your password and try again.');
+                    return;
+                }
+
+                const provider = new ethers.providers.JsonRpcProvider(RPC_URLS[chain]); // Using RPC URL for the respective network
+                const wallet = new ethers.Wallet(decryptedPrivateKey, provider);
+
+                const usdtContractAddress = USDT_CONTRACT_ADDRESSES[chain];
+                const usdtAbi = [
+                    "function transfer(address to, uint amount) returns (bool)"
+                ];
+                const contract = new ethers.Contract(usdtContractAddress, usdtAbi, wallet);
+                const gasPriceWei = ethers.utils.parseUnits(gasPrice.toString(), 'gwei');
+                const tx = await contract.populateTransaction.transfer(recipient, ethers.utils.parseUnits(amount, 6), {
+            gasPrice: gasPriceWei,
+            gasLimit: 60000 // Typically higher gas limit for token transfers
+        });
+
+
+        const balance = await wallet.getBalance();
+        const totalCost = ethers.BigNumber.from(tx.value || 0).add(gasPriceWei.mul(60000));
+        if (balance.lt(totalCost)) {
+            alert('Insufficient funds for the transaction.');
+            return;
+        }
+
+        const transactionResponse = await wallet.sendTransaction(tx);
+        alert('Transaction sent: ' + transactionResponse.hash);
+        closeModal(`usdt_${chain}`);
+            } catch (error) {
+                console.error(`Error sending USDT (${chain}):`, error);
+                alert(`Error sending USDT (${chain}): ${error.message}`);
+            }
+        }
+
     </script>
 </body>
 </html>
