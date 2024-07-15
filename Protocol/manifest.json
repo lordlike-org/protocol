@@ -1,0 +1,6 @@
+{
+  "short_name": "My Website",
+  "name": "My Awesome Website",
+  "scope": "/",
+  "start_url": "https://www.lordlike.org/"
+}
