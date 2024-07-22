@@ -66,6 +66,7 @@
     <li><strong>USDT (Polygon):</strong> {{ balance_usdt_matic }} USDT</li>
     </ul>
     <div class="buttons-container">
+<button id="buyCryptoButton" class="wallet-button" onclick="openMoonPayWidget()">Buy Crypto</button>
         <button class="wallet-button" onclick="showSelectionModal()">Send</button>
     </div>
 
@@ -193,6 +194,7 @@
 
     <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
     <script>
         const address = '{{ address }}';
         const encryptedKey = localStorage.getItem('encryptedKey');
@@ -218,6 +220,7 @@
         let ethBalance = parseFloat('{{ balance_eth }}'); // Assuming the balance is passed from the server
         let bnbBalance = parseFloat('{{ balance_bnb }}'); // Assuming the balance is passed from the server
         let maticBalance = parseFloat('{{ balance_matic }}'); // Assuming the balance is passed from the server
+
 
         async function fetchUsdRates() {
             try {
@@ -592,6 +595,36 @@
             }
         }
 
+    </script>
+<script type="module">
+      import { loadMoonPay } from 'https://cdn.jsdelivr.net/npm/@moonpay/moonpay-js';
+
+      async function initializeMoonPay() {
+        const moonPay = await loadMoonPay();
+
+        window.openMoonPayWidget = () => {
+          const widget = moonPay({
+            flow: 'buy',
+            environment: 'sandbox', // Use 'production' for combat mode
+            params: {
+              apiKey: 'pk_test_JdA1m8QXY9I6CI0FRfrihIUKeQ0' // test API key
+            },
+            variant: 'overlay',
+            handlers: {
+              onTransactionCompleted: (data) => {
+                console.log('Purchase successful:', data);
+              },
+              onTransactionFailed: (error) => {
+                console.error('Purchase failed:', error);
+              }
+            }
+          });
+
+          widget.show();
+        };
+      }
+
+      initializeMoonPay();
     </script>
 </body>
 </html>
