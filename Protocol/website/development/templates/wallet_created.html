@@ -66,8 +66,10 @@
     <li><strong>USDT (Polygon):</strong> {{ balance_usdt_matic }} USDT</li>
     </ul>
     <div class="buttons-container">
-<button id="buyCryptoButton" class="wallet-button" onclick="openMoonPayWidget()">Buy Crypto</button>
+        <button id="buyCryptoButton" class="wallet-button" onclick="openMoonPayWidget()">Buy Crypto</button>
         <button class="wallet-button" onclick="showSelectionModal()">Send</button>
+        <button id="swapButton" class="wallet-button">Swap Tokens</button>
+
     </div>
 
     <!-- Selection Modal -->
@@ -192,7 +194,28 @@
         </div>
     </div>
 
+<!-- Swap Modal -->
+<div id="swapModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('swap')">&times;</span>
+        <h2>Swap Tokens</h2>
+        <label for="from-token-select">From Token:</label>
+        <select id="from-token-select">
+            <!-- Tokens will be loaded dynamically -->
+        </select>
+        <input type="number" id="from-amount" placeholder="Amount" />
+
+        <label for="to-token-select">To Token:</label>
+        <select id="to-token-select">
+            <!-- Tokens will be loaded dynamically -->
+        </select>
+        <button id="confirmSwapButton" class="wallet-button">Swap</button>
+    </div>
+</div>
+
+
     <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@uniswap/sdk@3.0.3/dist/uniswap-sdk.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
     <script>
@@ -596,9 +619,9 @@
         }
 
     </script>
+
 <script type="module">
       import { loadMoonPay } from 'https://cdn.jsdelivr.net/npm/@moonpay/moonpay-js';
-
       async function initializeMoonPay() {
         const moonPay = await loadMoonPay();
 
@@ -626,5 +649,191 @@
 
       initializeMoonPay();
     </script>
+
+<script type="module">
+    import { ChainId, Token, WETH, Fetcher, Route, Trade, TokenAmount, TradeType, Percent } from 'https://jspm.dev/@uniswap/sdk@3.0.3';
+
+    const tokenListURL = 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/tokenlist.json';
+    let tokens = [];
+
+    async function fetchTokenList() {
+        try {
+            const response = await fetch(tokenListURL);
+            const data = await response.json();
+            tokens = data.tokens;
+
+            const ethToken = {
+                address: 'ETH',
+                symbol: 'ETH',
+                name: 'Ethereum',
+                decimals: 18
+            };
+
+            tokens.unshift(ethToken); // Add ETH to the beginning of the token list
+
+            const fromTokenSelect = document.getElementById('from-token-select');
+            const toTokenSelect = document.getElementById('to-token-select');
+            tokens.forEach(token => {
+                const option = document.createElement('option');
+                option.value = token.address;
+                option.text = `${token.symbol} (${token.name})`;
+                fromTokenSelect.appendChild(option);
+                toTokenSelect.appendChild(option.cloneNode(true));
+            });
+        } catch (error) {
+            console.error('Error fetching token list:', error);
+        }
+    }
+
+    document.getElementById('swapButton').addEventListener('click', function() {
+        document.getElementById('swapModal').style.display = 'block';
+    });
+
+    document.getElementById('confirmSwapButton').addEventListener('click', swapTokens);
+
+    function closeModal(type) {
+        const modal = document.getElementById(type + 'Modal');
+        modal.style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        if (event.target.className === 'modal') {
+            event.target.style.display = "none";
+        }
+    };
+
+    async function swapTokens() {
+        const fromTokenAddress = document.getElementById('from-token-select').value;
+        const toTokenAddress = document.getElementById('to-token-select').value;
+        const amount = document.getElementById('from-amount').value;
+
+        const provider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/a4c60cf1bd7e4c288d9221144f9efbe2');
+
+        const password = prompt("Enter your password to decrypt the private key:");
+
+        let decryptedPrivateKey;
+        try {
+            decryptedPrivateKey = CryptoJS.AES.decrypt(encryptedKey, password).toString(CryptoJS.enc.Utf8);
+            if (!decryptedPrivateKey) {
+                throw new Error("Error decrypting private key");
+            }
+        } catch (error) {
+            console.error("Error decrypting private key:", error);
+            alert('Error decrypting private key. Please, enter the correct password and try again.');
+            return;
+        }
+
+        const wallet = new ethers.Wallet(decryptedPrivateKey, provider);
+        const signer = wallet;
+
+        const chainId = ChainId.MAINNET;
+
+        let fromToken, toToken, pair;
+
+        if (fromTokenAddress === 'ETH') {
+            fromToken = WETH[chainId];
+            toToken = await Fetcher.fetchTokenData(chainId, toTokenAddress, provider);
+            pair = await Fetcher.fetchPairData(toToken, WETH[chainId], provider);
+        } else if (toTokenAddress === 'ETH') {
+            fromToken = await Fetcher.fetchTokenData(chainId, fromTokenAddress, provider);
+            toToken = WETH[chainId];
+            pair = await Fetcher.fetchPairData(fromToken, WETH[chainId], provider);
+        } else {
+            fromToken = await Fetcher.fetchTokenData(chainId, fromTokenAddress, provider);
+            toToken = await Fetcher.fetchTokenData(chainId, toTokenAddress, provider);
+            pair = await Fetcher.fetchPairData(fromToken, toToken, provider);
+        }
+
+        const route = new Route([pair], fromToken);
+        const trade = new Trade(route, new TokenAmount(fromToken, ethers.utils.parseUnits(amount, fromToken.decimals)), TradeType.EXACT_INPUT);
+
+        const slippageTolerance = new Percent('50', '10000'); // 0.50%
+        const amountOutMin = trade.minimumAmountOut(slippageTolerance).raw.toString();
+        const path = fromTokenAddress === 'ETH' ? [WETH[chainId].address, toToken.address] :
+                      toTokenAddress === 'ETH' ? [fromToken.address, WETH[chainId].address] :
+                      [fromToken.address, toToken.address];
+        const to = await signer.getAddress();
+        const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from current Unix time
+
+        const value = fromTokenAddress === 'ETH' ? ethers.utils.parseUnits(amount, 'ether') : ethers.utils.parseUnits(amount, fromToken.decimals);
+        const uniswapRouterAddress = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'; // Router address Uniswap V2
+        const uniswapRouterAbi = [
+            "function swapExactTokensForTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)",
+            "function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline) payable",
+            "function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)"
+        ];
+        const uniswapRouter = new ethers.Contract(uniswapRouterAddress, uniswapRouterAbi, signer);
+
+        if (fromTokenAddress !== 'ETH') {
+            const erc20Abi = ["function approve(address spender, uint256 amount) public returns (bool)"];
+            const erc20Contract = new ethers.Contract(fromTokenAddress, erc20Abi, signer);
+            const txApprove = await erc20Contract.approve(uniswapRouterAddress, value);
+            await txApprove.wait();
+        }
+
+        const balance = await wallet.getBalance();
+        const gasPrice = await provider.getGasPrice();
+        const gasLimit = ethers.BigNumber.from(210000); // Possibly need to adjust
+
+        const totalCost = fromTokenAddress === 'ETH' ? value.add(gasPrice.mul(gasLimit)) : gasPrice.mul(gasLimit);
+
+        if (balance.lt(totalCost)) {
+            alert('Insufficient funds to complete the transaction.');
+            return;
+        }
+
+        let tx;
+        if (fromTokenAddress === 'ETH') {
+            tx = await uniswapRouter.swapExactETHForTokens(
+                ethers.BigNumber.from(amountOutMin),
+                path,
+                to,
+                deadline,
+                {
+                    value: value,
+                    gasPrice: gasPrice,
+                    gasLimit: gasLimit
+                }
+            );
+        } else if (toTokenAddress === 'ETH') {
+            tx = await uniswapRouter.swapExactTokensForETH(
+                ethers.BigNumber.from(value),
+                ethers.BigNumber.from(amountOutMin),
+                path,
+                to,
+                deadline,
+                {
+                    gasPrice: gasPrice,
+                    gasLimit: gasLimit
+                }
+            );
+        } else {
+            tx = await uniswapRouter.swapExactTokensForTokens(
+                ethers.BigNumber.from(value),
+                ethers.BigNumber.from(amountOutMin),
+                path,
+                to,
+                deadline,
+                {
+                    gasPrice: gasPrice,
+                    gasLimit: gasLimit
+                }
+            );
+        }
+        alert('Swap transaction successfully: ' + tx.hash);
+        closeModal('swap');
+    }
+
+    window.onload = fetchTokenList;
+</script>
+
+
+
+
+
+
+
+
+
 </body>
 </html>
