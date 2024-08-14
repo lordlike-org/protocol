@@ -150,17 +150,17 @@ def wallet_created(request):
     if request.method == 'POST':
         address = request.POST.get('address')
 
-        # Получение балансов ETH, BNB и MATIC
+        # Getting ETH, BNB and MATIC balances
         balance_eth = get_balance(eth_w3, address)
         balance_bnb = get_balance(bnb_w3, address)
         balance_matic = get_balance(polygon_w3, address)
 
-        # Получение балансов USDT на разных сетях
+        # Getting USDT balances on different networks
         balance_usdt_eth = get_token_balance(eth_w3, USDT_CONTRACT_ADDRESSES['eth'], address)
         balance_usdt_bnb = get_token_balance(bnb_w3, USDT_CONTRACT_ADDRESSES['bnb'], address)
         balance_usdt_matic = get_token_balance(polygon_w3, USDT_CONTRACT_ADDRESSES['matic'], address)
 
-        # Получение балансов токенов
+        # Getting token balances
         token_balances = get_token_balances(address)
 
         return render(request, 'wallet_created.html', {
