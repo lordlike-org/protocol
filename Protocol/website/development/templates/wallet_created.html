@@ -69,7 +69,7 @@
         <button id="buyCryptoButton" class="wallet-button" onclick="openMoonPayWidget()">Buy Crypto</button>
         <button class="wallet-button" onclick="showSelectionModal()">Send</button>
         <button id="swapButton" class="wallet-button">Swap Tokens</button>
-
+        <button id="swapPolygonButton" class="wallet-button">Swap Tokens on Polygon</button>
     </div>
 
     <!-- Selection Modal -->
@@ -213,9 +213,37 @@
     </div>
 </div>
 
+   <!-- Swap Modal for Polygon -->
+<div id="swapPolygonModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('swapPolygon')">&times;</span>
+        <h2>Swap Tokens on Polygon</h2>
+
+        <label for="from-token-select-polygon">From Token:</label>
+        <select id="from-token-select-polygon">
+            <option value="" disabled selected>Select token</option>
+            <!-- Tokens will be loaded dynamically -->
+        </select>
+
+        <input type="number" id="from-amount-polygon" placeholder="Enter amount" />
+
+        <label for="to-token-select-polygon">To Token:</label>
+        <select id="to-token-select-polygon">
+            <option value="" disabled selected>Select token</option>
+            <!-- Tokens will be loaded dynamically -->
+        </select>
+
+        <!-- Placeholder for error messages -->
+        <p id="swap-error-message" class="error" style="display:none;">Please fill in all fields.</p>
+
+        <button id="confirmSwapPolygonButton" class="wallet-button">Swap</button>
+    </div>
+</div>
+
+
 
     <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@uniswap/sdk@3.0.3/dist/uniswap-sdk.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@uniswap/sdk@3.0.3/dist/uniswap-sdk.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
     <script>
@@ -827,12 +855,155 @@
     window.onload = fetchTokenList;
 </script>
 
+<script type="module">
 
+    const RPC_URLS = {
+        matic: 'https://polygon-rpc.com'
+    };
 
+    const tokenListURL = 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/polygon/tokenlist.json';
+    let tokens = [];
 
+    async function fetchPolygonTokenList() {
+        try {
+            const response = await fetch(tokenListURL);
+            const data = await response.json();
+            tokens = data.tokens;
 
+            const maticToken = {
+                address: 'MATIC',
+                symbol: 'MATIC',
+                name: 'Polygon',
+                decimals: 18
+            };
 
+            tokens.unshift(maticToken); // Add MATIC to the top of the list
 
+            const fromTokenSelect = document.getElementById('from-token-select-polygon');
+            const toTokenSelect = document.getElementById('to-token-select-polygon');
+            tokens.forEach(token => {
+                const option = document.createElement('option');
+                option.value = token.address;
+                option.text = `${token.symbol} (${token.name})`;
+                fromTokenSelect.appendChild(option);
+                toTokenSelect.appendChild(option.cloneNode(true));
+            });
+        } catch (error) {
+            console.error('Error fetching token list:', error);
+        }
+    }
+
+    document.getElementById('swapPolygonButton').addEventListener('click', () => {
+        document.getElementById('swapPolygonModal').style.display = 'block';
+    });
+
+    document.getElementById('confirmSwapPolygonButton').addEventListener('click', () => swapTokensOnPolygon(localStorage.getItem('encryptedKey')));
+    window.onload = fetchPolygonTokenList;
+
+    async function swapTokensOnPolygon(encryptedKey) {
+    const fromTokenAddress = document.getElementById('from-token-select-polygon').value;
+    const toTokenAddress = document.getElementById('to-token-select-polygon').value;
+    const amount = document.getElementById('from-amount-polygon').value;
+
+    const provider = new ethers.providers.JsonRpcProvider(RPC_URLS['matic']);
+
+    const password = prompt("Enter the password to decrypt the private key:");
+    let decryptedPrivateKey;
+    try {
+        decryptedPrivateKey = CryptoJS.AES.decrypt(encryptedKey, password).toString(CryptoJS.enc.Utf8);
+        if (!decryptedPrivateKey) {
+            throw new Error("Error decrypting private key");
+        }
+    } catch (error) {
+        console.error("Error decrypting private key:", error);
+        alert('Error decrypting private key. Try again.');
+        return;
+    }
+
+    const wallet = new ethers.Wallet(decryptedPrivateKey, provider);
+    const signer = wallet;
+
+    const uniswapRouterAddress = '0x1b02da8cb0d097eb8d57a175b88c7d8b47997506'; // Sushiswap Router (Uniswap V2 Fork) for Polygon
+    const uniswapRouterAbi = [
+        "function swapExactTokensForTokens(uint256,uint256,address[],address,uint256) external returns (uint256[])",
+        "function swapExactETHForTokens(uint256,address[],address,uint256) external payable returns (uint256[])",
+        "function swapExactTokensForETH(uint256,uint256,address[],address,uint256) external returns (uint256[])"
+    ];
+
+    const uniswapRouter = new ethers.Contract(uniswapRouterAddress, uniswapRouterAbi, signer);
+
+    const path = fromTokenAddress === 'MATIC' ? ['0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619', toTokenAddress] :
+                  toTokenAddress === 'MATIC' ? [fromTokenAddress, '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619'] :
+                  [fromTokenAddress, toTokenAddress];
+
+    const to = await signer.getAddress();
+    const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from current Unix time
+
+    const value = fromTokenAddress === 'MATIC' ? ethers.utils.parseUnits(amount, 'ether') : undefined;
+
+    const gasPrice = await provider.getGasPrice();
+    const gasLimit = ethers.BigNumber.from(210000);
+
+    // Checking your balance before sending a transaction
+    const balance = await wallet.getBalance();
+    const totalCost = gasPrice.mul(gasLimit).add(value || 0);
+
+    if (balance.lt(totalCost)) {
+        alert("Insufficient funds to complete the transaction.");
+        return;
+    }
+
+    if (fromTokenAddress !== 'MATIC') {
+        const erc20Abi = ["function approve(address spender, uint256 amount) public returns (bool)"];
+        const erc20Contract = new ethers.Contract(fromTokenAddress, erc20Abi, signer);
+        const txApprove = await erc20Contract.approve(uniswapRouterAddress, ethers.utils.parseUnits(amount, 18));
+        await txApprove.wait();
+    }
+
+    let tx;
+    if (fromTokenAddress === 'MATIC') {
+        tx = await uniswapRouter.swapExactETHForTokens(
+            0, // minimum amount of tokens to receive
+            path,
+            to,
+            deadline,
+            {
+                value: ethers.utils.parseUnits(amount, 'ether'),
+                gasPrice: gasPrice,
+                gasLimit: gasLimit
+            }
+        );
+    } else if (toTokenAddress === 'MATIC') {
+        tx = await uniswapRouter.swapExactTokensForETH(
+            ethers.utils.parseUnits(amount, 18),
+            0, // minimum amount of eth to receive
+            path,
+            to,
+            deadline,
+            {
+                gasPrice: gasPrice,
+                gasLimit: gasLimit
+            }
+        );
+    } else {
+        tx = await uniswapRouter.swapExactTokensForTokens(
+            ethers.utils.parseUnits(amount, 18),
+            0, // minimum amount of tokens to receive
+            path,
+            to,
+            deadline,
+            {
+                gasPrice: gasPrice,
+                gasLimit: gasLimit
+            }
+        );
+    }
+
+    alert('Swap transaction completed successfully: ' + tx.hash);
+    closeModal('swapPolygon');
+}
+
+</script>
 
 
 </body>
