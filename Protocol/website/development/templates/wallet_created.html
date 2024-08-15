@@ -70,6 +70,8 @@
         <button class="wallet-button" onclick="showSelectionModal()">Send</button>
         <button id="swapButton" class="wallet-button">Swap Tokens</button>
         <button id="swapPolygonButton" class="wallet-button">Swap Tokens on Polygon</button>
+        <button id="swapBscButton" class="wallet-button">Swap Tokens on BSC</button>
+
     </div>
 
     <!-- Selection Modal -->
@@ -240,7 +242,29 @@
     </div>
 </div>
 
+<!-- Swap Modal for BSC -->
+<div id="swapBscModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('swapBsc')">&times;</span>
+        <h2>Swap Tokens on BSC</h2>
 
+        <label for="from-token-select-bsc">From Token:</label>
+        <select id="from-token-select-bsc">
+            <option value="" disabled selected>Select token</option>
+            <!-- Tokens will be loaded dynamically -->
+        </select>
+
+        <input type="number" id="from-amount-bsc" placeholder="Enter amount" />
+
+        <label for="to-token-select-bsc">To Token:</label>
+        <select id="to-token-select-bsc">
+            <option value="" disabled selected>Select token</option>
+            <!-- Tokens will be loaded dynamically -->
+        </select>
+
+        <button id="confirmSwapBscButton" class="wallet-button">Swap</button>
+    </div>
+</div>
 
     <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@uniswap/sdk@3.0.3/dist/uniswap-sdk.umd.min.js"></script>
@@ -976,7 +1000,7 @@
     } else if (toTokenAddress === 'MATIC') {
         tx = await uniswapRouter.swapExactTokensForETH(
             ethers.utils.parseUnits(amount, 18),
-            0, // minimum amount of eth to receive
+            0, // minimum amount of matic to receive
             path,
             to,
             deadline,
@@ -1002,9 +1026,166 @@
     alert('Swap transaction completed successfully: ' + tx.hash);
     closeModal('swapPolygon');
 }
-
 </script>
 
+<script type="module">
+
+    const RPC_URLS = {
+        bsc: 'https://bsc-dataseed.binance.org/'
+    };
+
+    const pancakeRouterAddress = '0x10ED43C718714eb63d5aA57B78B54704E256024E'; // PancakeSwap Router on BSC
+    const pancakeRouterAbi = [
+        "function swapExactTokensForTokens(uint256,uint256,address[],address,uint256) external returns (uint256[])",
+        "function swapExactETHForTokens(uint256,address[],address,uint256) external payable returns (uint256[])",
+        "function swapExactTokensForETH(uint256,uint256,address[],address,uint256) external returns (uint256[])"
+    ];
+
+    const tokenListURL = 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/tokenlist.json';
+    let tokens = [];
+
+    async function fetchBscTokenList() {
+        try {
+            const response = await fetch(tokenListURL);
+            const data = await response.json();
+            tokens = data.tokens;
+
+            const bnbToken = {
+                address: 'BNB',
+                symbol: 'BNB',
+                name: 'Binance Coin',
+                decimals: 18
+            };
+
+            tokens.unshift(bnbToken); // Add BNB to the beginning of the list
+
+            const fromTokenSelect = document.getElementById('from-token-select-bsc');
+            const toTokenSelect = document.getElementById('to-token-select-bsc');
+            tokens.forEach(token => {
+                const option = document.createElement('option');
+                option.value = token.address;
+                option.text = `${token.symbol} (${token.name})`;
+                fromTokenSelect.appendChild(option);
+                toTokenSelect.appendChild(option.cloneNode(true));
+            });
+        } catch (error) {
+            console.error('Error fetching token list:', error);
+        }
+    }
+
+    document.getElementById('swapBscButton').addEventListener('click', () => {
+        document.getElementById('swapBscModal').style.display = 'block';
+    });
+
+    document.getElementById('confirmSwapBscButton').addEventListener('click', () => swapTokensOnBSC(localStorage.getItem('encryptedKey')));
+    window.onload = fetchBscTokenList;
+
+    async function swapTokensOnBSC(encryptedKey) {
+        const fromTokenAddress = document.getElementById('from-token-select-bsc').value;
+        const toTokenAddress = document.getElementById('to-token-select-bsc').value;
+        const amount = document.getElementById('from-amount-bsc').value;
+
+        if (!fromTokenAddress || !toTokenAddress || !amount) {
+            alert('Please fill in all fields.');
+            return;
+        }
+
+        const provider = new ethers.providers.JsonRpcProvider(RPC_URLS['bsc']);
+
+        const password = prompt("Enter the password to decrypt the private key:");
+        let decryptedPrivateKey;
+        try {
+            decryptedPrivateKey = CryptoJS.AES.decrypt(encryptedKey, password).toString(CryptoJS.enc.Utf8);
+            if (!decryptedPrivateKey) {
+                throw new Error("Error decrypting private key");
+            }
+        } catch (error) {
+            console.error("Error decrypting private key:", error);
+            alert('Error decrypting private key. Try again.');
+            return;
+        }
+
+        const wallet = new ethers.Wallet(decryptedPrivateKey, provider);
+        const signer = wallet;
+
+        const pancakeRouter = new ethers.Contract(pancakeRouterAddress, pancakeRouterAbi, signer);
+
+        const path = fromTokenAddress === 'BNB' ? [ethers.constants.AddressZero, toTokenAddress] :
+                      toTokenAddress === 'BNB' ? [fromTokenAddress, ethers.constants.AddressZero] :
+                      [fromTokenAddress, toTokenAddress];
+
+        const to = await signer.getAddress();
+        const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from current Unix time
+
+        const value = fromTokenAddress === 'BNB' ? ethers.utils.parseUnits(amount, 'ether') : undefined;
+
+        if (fromTokenAddress !== 'BNB') {
+            const erc20Abi = ["function approve(address spender, uint256 amount) public returns (bool)"];
+            const erc20Contract = new ethers.Contract(fromTokenAddress, erc20Abi, signer);
+            const txApprove = await erc20Contract.approve(pancakeRouterAddress, ethers.utils.parseUnits(amount, 18));
+            await txApprove.wait();
+        }
+
+        const gasPrice = await provider.getGasPrice();
+        const gasLimit = ethers.BigNumber.from(210000);
+
+        // Checking your balance before sending a transaction
+        const balance = await wallet.getBalance();
+        const totalCost = gasPrice.mul(gasLimit).add(value || 0);
+
+        if (balance.lt(totalCost)) {
+            alert("Insufficient funds to complete the transaction.");
+            return;
+        }
+
+        let tx;
+        if (fromTokenAddress === 'BNB') {
+            tx = await pancakeRouter.swapExactETHForTokens(
+                0, // minimum amount of tokens to receive
+                path,
+                to,
+                deadline,
+                {
+                    value: ethers.utils.parseUnits(amount, 'ether'),
+                    gasPrice: gasPrice,
+                    gasLimit: gasLimit
+                }
+            );
+        } else if (toTokenAddress === 'BNB') {
+            tx = await pancakeRouter.swapExactTokensForETH(
+                ethers.utils.parseUnits(amount, 18),
+                0, // minimum amount of bnb to receive
+                path,
+                to,
+                deadline,
+                {
+                    gasPrice: gasPrice,
+                    gasLimit: gasLimit
+                }
+            );
+        } else {
+            tx = await pancakeRouter.swapExactTokensForTokens(
+                ethers.utils.parseUnits(amount, 18),
+                0, // // minimum amount of tokens to receive
+                path,
+                to,
+                deadline,
+                {
+                    gasPrice: gasPrice,
+                    gasLimit: gasLimit
+                }
+            );
+        }
+
+        alert('Swap transaction completed successfully: ' + tx.hash);
+        closeModal('swapBsc');
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+
+</script>
 
 </body>
 </html>
