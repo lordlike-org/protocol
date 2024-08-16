@@ -68,9 +68,18 @@
     <div class="buttons-container">
         <button id="buyCryptoButton" class="wallet-button" onclick="openMoonPayWidget()">Buy Crypto</button>
         <button class="wallet-button" onclick="showSelectionModal()">Send</button>
-        <button id="swapEthButton" class="wallet-button">Swap Tokens on Eth</button>
-        <button id="swapPolygonButton" class="wallet-button">Swap Tokens on Polygon</button>
-        <button id="swapBscButton" class="wallet-button">Swap Tokens on BSC</button>
+        <button id="selectChainButton" class="wallet-button">Swap Tokens</button>
+    </div>
+
+    <!-- Chain Selection Modal -->
+    <div id="chainSelectionModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('chainSelectionModal')">&times;</span>
+            <h2>Select Chain</h2>
+            <button id="selectEthChainButton" class="wallet-button">Ethereum</button>
+            <button id="selectPolygonChainButton" class="wallet-button">Polygon</button>
+            <button id="selectBscChainButton" class="wallet-button">BSC</button>
+        </div>
     </div>
 
     <!-- Selection Modal -->
@@ -743,31 +752,39 @@
     }
 
     function setupEventListeners() {
-    document.getElementById('swapEthButton').addEventListener('click', function() {
+    // Кнопка для открытия окна выбора сети
+    document.getElementById('selectChainButton').addEventListener('click', function() {
+        document.getElementById('chainSelectionModal').style.display = 'block';
+    });
+
+    // Кнопки для выбора сети и открытия соответствующего окна свапа
+    document.getElementById('selectEthChainButton').addEventListener('click', function() {
+        closeModal('chainSelectionModal');
         document.getElementById('swapEthModal').style.display = 'block';
     });
 
-    document.getElementById('confirmSwapEthButton').addEventListener('click', swapEthTokens);
-
-    document.getElementById('swapPolygonButton').addEventListener('click', function() {
+    document.getElementById('selectPolygonChainButton').addEventListener('click', function() {
+        closeModal('chainSelectionModal');
         document.getElementById('swapPolygonModal').style.display = 'block';
     });
 
-    document.getElementById('confirmSwapPolygonButton').addEventListener('click', swapTokensOnPolygon);
-
-    document.getElementById('swapBscButton').addEventListener('click', function() {
+    document.getElementById('selectBscChainButton').addEventListener('click', function() {
+        closeModal('chainSelectionModal');
         document.getElementById('swapBscModal').style.display = 'block';
     });
 
+    // Кнопки для подтверждения свапа в каждом из модальных окон
+    document.getElementById('confirmSwapEthButton').addEventListener('click', swapEthTokens);
+    document.getElementById('confirmSwapPolygonButton').addEventListener('click', swapTokensOnPolygon);
     document.getElementById('confirmSwapBscButton').addEventListener('click', swapTokensOnBSC);
 
+    // Закрытие модального окна при клике вне его
     window.onclick = function(event) {
         if (event.target.className === 'modal') {
             event.target.style.display = "none";
         }
     };
 }
-
 
     function closeModal(modalId) {
         document.getElementById(modalId).style.display = 'none';
