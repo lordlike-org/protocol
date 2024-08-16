@@ -74,7 +74,7 @@
     <!-- Chain Selection Modal -->
     <div id="chainSelectionModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('chainSelectionModal')">&times;</span>
+            <span class="close" onclick="closeSwapModal('chainSelectionModal')">&times;</span>
             <h2>Select Chain</h2>
             <button id="selectEthChainButton" class="wallet-button">Ethereum</button>
             <button id="selectPolygonChainButton" class="wallet-button">Polygon</button>
@@ -207,7 +207,7 @@
     <!-- Swap Eth Modal -->
     <div id="swapEthModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('swapEthModal')">&times;</span>
+            <span class="close" onclick="closeSwapModal('swapEthModal')">&times;</span>
             <h2>Swap Tokens</h2>
 
             <label for="from-token-select">From Token:</label>
@@ -231,7 +231,7 @@
     <!-- Swap Modal for Polygon -->
     <div id="swapPolygonModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('swapPolygonModal')">&times;</span>
+            <span class="close" onclick="closeSwapModal('swapPolygonModal')">&times;</span>
             <h2>Swap Tokens on Polygon</h2>
 
             <label for="from-token-select-polygon">From Token:</label>
@@ -258,7 +258,7 @@
     <!-- Swap Modal for BSC -->
     <div id="swapBscModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('swapBscModal')">&times;</span>
+            <span class="close" onclick="closeSwapModal('swapBscModal')">&times;</span>
             <h2>Swap Tokens on BSC</h2>
 
             <label for="from-token-select-bsc">From Token:</label>
@@ -751,44 +751,51 @@
         }
     }
 
+       function closeSwapModal(type) {
+        const modal = document.getElementById(type + 'Modal');
+        modal.style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        if (event.target.className === 'modal') {
+            event.target.style.display = "none";
+        }
+    };
+
     function setupEventListeners() {
-    // Кнопка для открытия окна выбора сети
+    // Button to open the network selection window
     document.getElementById('selectChainButton').addEventListener('click', function() {
         document.getElementById('chainSelectionModal').style.display = 'block';
     });
 
-    // Кнопки для выбора сети и открытия соответствующего окна свапа
+    // Buttons for selecting a network and opening the corresponding swap window
     document.getElementById('selectEthChainButton').addEventListener('click', function() {
-        closeModal('chainSelectionModal');
+        closeSwapModal('chainSelectionModal');
         document.getElementById('swapEthModal').style.display = 'block';
     });
 
     document.getElementById('selectPolygonChainButton').addEventListener('click', function() {
-        closeModal('chainSelectionModal');
+        closeSwapModal('chainSelectionModal');
         document.getElementById('swapPolygonModal').style.display = 'block';
     });
 
     document.getElementById('selectBscChainButton').addEventListener('click', function() {
-        closeModal('chainSelectionModal');
+        closeSwapModal('chainSelectionModal');
         document.getElementById('swapBscModal').style.display = 'block';
     });
 
-    // Кнопки для подтверждения свапа в каждом из модальных окон
+    // Buttons to confirm the swap in each of the modal windows
     document.getElementById('confirmSwapEthButton').addEventListener('click', swapEthTokens);
     document.getElementById('confirmSwapPolygonButton').addEventListener('click', swapTokensOnPolygon);
     document.getElementById('confirmSwapBscButton').addEventListener('click', swapTokensOnBSC);
 
-    // Закрытие модального окна при клике вне его
+    // Close the modal window when clicking outside of it
     window.onclick = function(event) {
         if (event.target.className === 'modal') {
             event.target.style.display = "none";
         }
     };
 }
-
-    function closeModal(modalId) {
-        document.getElementById(modalId).style.display = 'none';
-    }
 
     async function swapEthTokens() {
         const fromTokenAddress = document.getElementById('from-token-select').value;
@@ -909,7 +916,7 @@
             );
         }
         alert('Swap transaction successfully: ' + tx.hash);
-        closeModal('swapEthModal');
+        closeSwapModal('swapEthModal');
     }
 
     async function swapTokensOnPolygon() {
@@ -1012,7 +1019,7 @@
     }
 
     alert('Swap transaction completed successfully: ' + tx.hash);
-    closeModal('swapPolygon');
+    closeSwapModal('swapPolygon');
 }
 
     async function swapTokensOnBSC() {
@@ -1024,15 +1031,18 @@
             alert('Please fill in all fields.');
             return;
         }
-const pancakeRouterAddress = '0x10ED43C718714eb63d5aA57B78B54704E256024E'; // PancakeSwap Router on BSC
-    const pancakeRouterAbi = [
-        "function swapExactTokensForTokens(uint256,uint256,address[],address,uint256) external returns (uint256[])",
-        "function swapExactETHForTokens(uint256,address[],address,uint256) external payable returns (uint256[])",
-        "function swapExactTokensForETH(uint256,uint256,address[],address,uint256) external returns (uint256[])"
-    ];
-    const RPC_URLS = {
-        bsc: 'https://bsc-dataseed.binance.org/'
-    };
+
+        const pancakeRouterAddress = '0x10ED43C718714eb63d5aA57B78B54704E256024E'; // PancakeSwap Router on BSC
+        const pancakeRouterAbi = [
+            "function swapExactTokensForTokens(uint256,uint256,address[],address,uint256) external returns (uint256[])",
+            "function swapExactETHForTokens(uint256,address[],address,uint256) external payable returns (uint256[])",
+            "function swapExactTokensForETH(uint256,uint256,address[],address,uint256) external returns (uint256[])"
+        ];
+
+        const RPC_URLS = {
+            bsc: 'https://bsc-dataseed.binance.org/'
+        };
+
         const provider = new ethers.providers.JsonRpcProvider(RPC_URLS['bsc']);
 
         const password = prompt("Enter the password to decrypt the private key:");
@@ -1121,12 +1131,10 @@ const pancakeRouterAddress = '0x10ED43C718714eb63d5aA57B78B54704E256024E'; // Pa
         }
 
         alert('Swap transaction completed successfully: ' + tx.hash);
-        closeModal('swapBsc');
+        closeSwapModal('swapBsc');
     }
 
-    window.onload = () => {
-
-        // Fetch token lists for each network
+    document.addEventListener('DOMContentLoaded', () => {
         fetchTokenList(ethTokenListURL, 'from-token-select', 'to-token-select', {
             address: 'ETH',
             symbol: 'ETH',
@@ -1149,7 +1157,7 @@ const pancakeRouterAddress = '0x10ED43C718714eb63d5aA57B78B54704E256024E'; // Pa
         });
 
         setupEventListeners();
-    };
+    });
 </script>
 
 
