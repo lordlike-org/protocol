@@ -71,13 +71,12 @@
         <button id="swapButton" class="wallet-button">Swap Tokens</button>
         <button id="swapPolygonButton" class="wallet-button">Swap Tokens on Polygon</button>
         <button id="swapBscButton" class="wallet-button">Swap Tokens on BSC</button>
-
     </div>
 
     <!-- Selection Modal -->
     <div id="selectionModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('selection')">&times;</span>
+            <span class="close" onclick="closeModal('selectionModal')">&times;</span>
             <h2>Select what to send</h2>
             <button class="wallet-button" onclick="showModal('eth')">ETH</button>
             <button class="wallet-button" onclick="showModal('bnb')">BNB</button>
@@ -91,7 +90,7 @@
     <!-- Modal window for sending ETH -->
     <div id="ethModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('eth')">&times;</span>
+            <span class="close" onclick="closeModal('ethModal')">&times;</span>
             <h2>Send ETH</h2>
             <p>Recipient Address:</p>
             <input type="text" id="ethRecipient" />
@@ -110,7 +109,7 @@
     <!-- Modal window for sending BNB -->
     <div id="bnbModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('bnb')">&times;</span>
+            <span class="close" onclick="closeModal('bnbModal')">&times;</span>
             <h2>Send BNB</h2>
             <p>Recipient Address:</p>
             <input type="text" id="bnbRecipient" />
@@ -129,7 +128,7 @@
     <!-- Modal window for sending MATIC -->
     <div id="maticModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('matic')">&times;</span>
+            <span class="close" onclick="closeModal('maticModal')">&times;</span>
             <h2>Send MATIC</h2>
             <p>Recipient Address:</p>
             <input type="text" id="maticRecipient" />
@@ -148,7 +147,7 @@
     <!-- Modal window for sending USDT on Ethereum -->
     <div id="usdt_ethModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('usdt_eth')">&times;</span>
+            <span class="close" onclick="closeModal('usdt_ethModal')">&times;</span>
             <h2>Send USDT (Ethereum)</h2>
             <p>Recipient Address:</p>
             <input type="text" id="usdt_ethRecipient" />
@@ -165,7 +164,7 @@
     <!-- Modal window for sending USDT on BSC -->
     <div id="usdt_bnbModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('usdt_bnb')">&times;</span>
+            <span class="close" onclick="closeModal('usdt_bnbModal')">&times;</span>
             <h2>Send USDT (BSC)</h2>
             <p>Recipient Address:</p>
             <input type="text" id="usdt_bnbRecipient" />
@@ -182,7 +181,7 @@
     <!-- Modal window for sending USDT on Polygon -->
     <div id="usdt_maticModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('usdt_matic')">&times;</span>
+            <span class="close" onclick="closeModal('usdt_maticModal')">&times;</span>
             <h2>Send USDT (Polygon)</h2>
             <p>Recipient Address:</p>
             <input type="text" id="usdt_maticRecipient" />
@@ -196,75 +195,80 @@
         </div>
     </div>
 
-<!-- Swap Modal -->
-<div id="swapModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal('swap')">&times;</span>
-        <h2>Swap Tokens</h2>
-        <label for="from-token-select">From Token:</label>
-        <select id="from-token-select">
-            <!-- Tokens will be loaded dynamically -->
-        </select>
-        <input type="number" id="from-amount" placeholder="Amount" />
+    <!-- Swap Modal -->
+    <div id="swapModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('swapModal')">&times;</span>
+            <h2>Swap Tokens</h2>
 
-        <label for="to-token-select">To Token:</label>
-        <select id="to-token-select">
-            <!-- Tokens will be loaded dynamically -->
-        </select>
-        <button id="confirmSwapButton" class="wallet-button">Swap</button>
+            <label for="from-token-select">From Token:</label>
+            <select id="from-token-select">
+                <option value="" disabled selected>Select token</option>
+                <!-- Tokens will be loaded dynamically -->
+            </select>
+
+            <input type="number" id="from-amount" placeholder="Enter amount" />
+
+            <label for="to-token-select">To Token:</label>
+            <select id="to-token-select">
+                <option value="" disabled selected>Select token</option>
+                <!-- Tokens will be loaded dynamically -->
+            </select>
+
+            <button id="confirmSwapButton" class="wallet-button">Swap</button>
+        </div>
     </div>
-</div>
 
-   <!-- Swap Modal for Polygon -->
-<div id="swapPolygonModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal('swapPolygon')">&times;</span>
-        <h2>Swap Tokens on Polygon</h2>
+    <!-- Swap Modal for Polygon -->
+    <div id="swapPolygonModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('swapPolygonModal')">&times;</span>
+            <h2>Swap Tokens on Polygon</h2>
 
-        <label for="from-token-select-polygon">From Token:</label>
-        <select id="from-token-select-polygon">
-            <option value="" disabled selected>Select token</option>
-            <!-- Tokens will be loaded dynamically -->
-        </select>
+            <label for="from-token-select-polygon">From Token:</label>
+            <select id="from-token-select-polygon">
+                <option value="" disabled selected>Select token</option>
+                <!-- Tokens will be loaded dynamically -->
+            </select>
 
-        <input type="number" id="from-amount-polygon" placeholder="Enter amount" />
+            <input type="number" id="from-amount-polygon" placeholder="Enter amount" />
 
-        <label for="to-token-select-polygon">To Token:</label>
-        <select id="to-token-select-polygon">
-            <option value="" disabled selected>Select token</option>
-            <!-- Tokens will be loaded dynamically -->
-        </select>
+            <label for="to-token-select-polygon">To Token:</label>
+            <select id="to-token-select-polygon">
+                <option value="" disabled selected>Select token</option>
+                <!-- Tokens will be loaded dynamically -->
+            </select>
 
-        <!-- Placeholder for error messages -->
-        <p id="swap-error-message" class="error" style="display:none;">Please fill in all fields.</p>
+            <!-- Placeholder for error messages -->
+            <p id="swap-error-message" class="error" style="display:none;">Please fill in all fields.</p>
 
-        <button id="confirmSwapPolygonButton" class="wallet-button">Swap</button>
+            <button id="confirmSwapPolygonButton" class="wallet-button">Swap</button>
+        </div>
     </div>
-</div>
 
-<!-- Swap Modal for BSC -->
-<div id="swapBscModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal('swapBsc')">&times;</span>
-        <h2>Swap Tokens on BSC</h2>
+    <!-- Swap Modal for BSC -->
+    <div id="swapBscModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('swapBscModal')">&times;</span>
+            <h2>Swap Tokens on BSC</h2>
 
-        <label for="from-token-select-bsc">From Token:</label>
-        <select id="from-token-select-bsc">
-            <option value="" disabled selected>Select token</option>
-            <!-- Tokens will be loaded dynamically -->
-        </select>
+            <label for="from-token-select-bsc">From Token:</label>
+            <select id="from-token-select-bsc">
+                <option value="" disabled selected>Select token</option>
+                <!-- Tokens will be loaded dynamically -->
+            </select>
 
-        <input type="number" id="from-amount-bsc" placeholder="Enter amount" />
+            <input type="number" id="from-amount-bsc" placeholder="Enter amount" />
 
-        <label for="to-token-select-bsc">To Token:</label>
-        <select id="to-token-select-bsc">
-            <option value="" disabled selected>Select token</option>
-            <!-- Tokens will be loaded dynamically -->
-        </select>
+            <label for="to-token-select-bsc">To Token:</label>
+            <select id="to-token-select-bsc">
+                <option value="" disabled selected>Select token</option>
+                <!-- Tokens will be loaded dynamically -->
+            </select>
 
-        <button id="confirmSwapBscButton" class="wallet-button">Swap</button>
+            <button id="confirmSwapBscButton" class="wallet-button">Swap</button>
+        </div>
     </div>
-</div>
 
     <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@uniswap/sdk@3.0.3/dist/uniswap-sdk.umd.min.js"></script>
@@ -705,26 +709,26 @@
 <script type="module">
     import { ChainId, Token, WETH, Fetcher, Route, Trade, TokenAmount, TradeType, Percent } from 'https://jspm.dev/@uniswap/sdk@3.0.3';
 
-    const tokenListURL = 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/tokenlist.json';
-    let tokens = [];
+    const ethTokenListURL = 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/tokenlist.json';
+    const polygonTokenListURL = 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/polygon/tokenlist.json';
+    const bscTokenListURL = 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/tokenlist.json';
 
-    async function fetchTokenList() {
+    async function fetchTokenList(tokenListURL, fromTokenSelectId, toTokenSelectId, defaultToken) {
         try {
             const response = await fetch(tokenListURL);
             const data = await response.json();
-            tokens = data.tokens;
+            let tokens = data.tokens;
 
-            const ethToken = {
-                address: 'ETH',
-                symbol: 'ETH',
-                name: 'Ethereum',
-                decimals: 18
-            };
+            if (!tokens || tokens.length === 0) {
+                return;
+            }
 
-            tokens.unshift(ethToken); // Add ETH to the beginning of the token list
 
-            const fromTokenSelect = document.getElementById('from-token-select');
-            const toTokenSelect = document.getElementById('to-token-select');
+            tokens.unshift(defaultToken); // Add the default token (e.g., ETH, BNB, MATIC) to the beginning of the list
+
+            const fromTokenSelect = document.getElementById(fromTokenSelectId);
+            const toTokenSelect = document.getElementById(toTokenSelectId);
+
             tokens.forEach(token => {
                 const option = document.createElement('option');
                 option.value = token.address;
@@ -732,27 +736,42 @@
                 fromTokenSelect.appendChild(option);
                 toTokenSelect.appendChild(option.cloneNode(true));
             });
+
         } catch (error) {
             console.error('Error fetching token list:', error);
         }
     }
 
+    function setupEventListeners() {
     document.getElementById('swapButton').addEventListener('click', function() {
         document.getElementById('swapModal').style.display = 'block';
     });
 
     document.getElementById('confirmSwapButton').addEventListener('click', swapTokens);
 
-    function closeModal(type) {
-        const modal = document.getElementById(type + 'Modal');
-        modal.style.display = 'none';
-    }
+    document.getElementById('swapPolygonButton').addEventListener('click', function() {
+        document.getElementById('swapPolygonModal').style.display = 'block';
+    });
+
+    document.getElementById('confirmSwapPolygonButton').addEventListener('click', swapTokensOnPolygon);
+
+    document.getElementById('swapBscButton').addEventListener('click', function() {
+        document.getElementById('swapBscModal').style.display = 'block';
+    });
+
+    document.getElementById('confirmSwapBscButton').addEventListener('click', swapTokensOnBSC);
 
     window.onclick = function(event) {
         if (event.target.className === 'modal') {
             event.target.style.display = "none";
         }
     };
+}
+
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
 
     async function swapTokens() {
         const fromTokenAddress = document.getElementById('from-token-select').value;
@@ -873,58 +892,10 @@
             );
         }
         alert('Swap transaction successfully: ' + tx.hash);
-        closeModal('swap');
+        closeModal('swapModal');
     }
 
-    window.onload = fetchTokenList;
-</script>
-
-<script type="module">
-
-    const RPC_URLS = {
-        matic: 'https://polygon-rpc.com'
-    };
-
-    const tokenListURL = 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/polygon/tokenlist.json';
-    let tokens = [];
-
-    async function fetchPolygonTokenList() {
-        try {
-            const response = await fetch(tokenListURL);
-            const data = await response.json();
-            tokens = data.tokens;
-
-            const maticToken = {
-                address: 'MATIC',
-                symbol: 'MATIC',
-                name: 'Polygon',
-                decimals: 18
-            };
-
-            tokens.unshift(maticToken); // Add MATIC to the top of the list
-
-            const fromTokenSelect = document.getElementById('from-token-select-polygon');
-            const toTokenSelect = document.getElementById('to-token-select-polygon');
-            tokens.forEach(token => {
-                const option = document.createElement('option');
-                option.value = token.address;
-                option.text = `${token.symbol} (${token.name})`;
-                fromTokenSelect.appendChild(option);
-                toTokenSelect.appendChild(option.cloneNode(true));
-            });
-        } catch (error) {
-            console.error('Error fetching token list:', error);
-        }
-    }
-
-    document.getElementById('swapPolygonButton').addEventListener('click', () => {
-        document.getElementById('swapPolygonModal').style.display = 'block';
-    });
-
-    document.getElementById('confirmSwapPolygonButton').addEventListener('click', () => swapTokensOnPolygon(localStorage.getItem('encryptedKey')));
-    window.onload = fetchPolygonTokenList;
-
-    async function swapTokensOnPolygon(encryptedKey) {
+    async function swapTokensOnPolygon() {
     const fromTokenAddress = document.getElementById('from-token-select-polygon').value;
     const toTokenAddress = document.getElementById('to-token-select-polygon').value;
     const amount = document.getElementById('from-amount-polygon').value;
@@ -1000,7 +971,7 @@
     } else if (toTokenAddress === 'MATIC') {
         tx = await uniswapRouter.swapExactTokensForETH(
             ethers.utils.parseUnits(amount, 18),
-            0, // minimum amount of matic to receive
+            0, // minimum amount of eth to receive
             path,
             to,
             deadline,
@@ -1026,61 +997,8 @@
     alert('Swap transaction completed successfully: ' + tx.hash);
     closeModal('swapPolygon');
 }
-</script>
 
-<script type="module">
-
-    const RPC_URLS = {
-        bsc: 'https://bsc-dataseed.binance.org/'
-    };
-
-    const pancakeRouterAddress = '0x10ED43C718714eb63d5aA57B78B54704E256024E'; // PancakeSwap Router on BSC
-    const pancakeRouterAbi = [
-        "function swapExactTokensForTokens(uint256,uint256,address[],address,uint256) external returns (uint256[])",
-        "function swapExactETHForTokens(uint256,address[],address,uint256) external payable returns (uint256[])",
-        "function swapExactTokensForETH(uint256,uint256,address[],address,uint256) external returns (uint256[])"
-    ];
-
-    const tokenListURL = 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/tokenlist.json';
-    let tokens = [];
-
-    async function fetchBscTokenList() {
-        try {
-            const response = await fetch(tokenListURL);
-            const data = await response.json();
-            tokens = data.tokens;
-
-            const bnbToken = {
-                address: 'BNB',
-                symbol: 'BNB',
-                name: 'Binance Coin',
-                decimals: 18
-            };
-
-            tokens.unshift(bnbToken); // Add BNB to the beginning of the list
-
-            const fromTokenSelect = document.getElementById('from-token-select-bsc');
-            const toTokenSelect = document.getElementById('to-token-select-bsc');
-            tokens.forEach(token => {
-                const option = document.createElement('option');
-                option.value = token.address;
-                option.text = `${token.symbol} (${token.name})`;
-                fromTokenSelect.appendChild(option);
-                toTokenSelect.appendChild(option.cloneNode(true));
-            });
-        } catch (error) {
-            console.error('Error fetching token list:', error);
-        }
-    }
-
-    document.getElementById('swapBscButton').addEventListener('click', () => {
-        document.getElementById('swapBscModal').style.display = 'block';
-    });
-
-    document.getElementById('confirmSwapBscButton').addEventListener('click', () => swapTokensOnBSC(localStorage.getItem('encryptedKey')));
-    window.onload = fetchBscTokenList;
-
-    async function swapTokensOnBSC(encryptedKey) {
+    async function swapTokensOnBSC() {
         const fromTokenAddress = document.getElementById('from-token-select-bsc').value;
         const toTokenAddress = document.getElementById('to-token-select-bsc').value;
         const amount = document.getElementById('from-amount-bsc').value;
@@ -1089,7 +1007,15 @@
             alert('Please fill in all fields.');
             return;
         }
-
+const pancakeRouterAddress = '0x10ED43C718714eb63d5aA57B78B54704E256024E'; // PancakeSwap Router on BSC
+    const pancakeRouterAbi = [
+        "function swapExactTokensForTokens(uint256,uint256,address[],address,uint256) external returns (uint256[])",
+        "function swapExactETHForTokens(uint256,address[],address,uint256) external payable returns (uint256[])",
+        "function swapExactTokensForETH(uint256,uint256,address[],address,uint256) external returns (uint256[])"
+    ];
+    const RPC_URLS = {
+        bsc: 'https://bsc-dataseed.binance.org/'
+    };
         const provider = new ethers.providers.JsonRpcProvider(RPC_URLS['bsc']);
 
         const password = prompt("Enter the password to decrypt the private key:");
@@ -1181,11 +1107,34 @@
         closeModal('swapBsc');
     }
 
-    function closeModal(modalId) {
-        document.getElementById(modalId).style.display = 'none';
-    }
+    window.onload = () => {
 
+        // Fetch token lists for each network
+        fetchTokenList(ethTokenListURL, 'from-token-select', 'to-token-select', {
+            address: 'ETH',
+            symbol: 'ETH',
+            name: 'Ethereum',
+            decimals: 18
+        });
+
+        fetchTokenList(polygonTokenListURL, 'from-token-select-polygon', 'to-token-select-polygon', {
+            address: 'MATIC',
+            symbol: 'MATIC',
+            name: 'Polygon',
+            decimals: 18
+        });
+
+        fetchTokenList(bscTokenListURL, 'from-token-select-bsc', 'to-token-select-bsc', {
+            address: 'BNB',
+            symbol: 'BNB',
+            name: 'Binance Coin',
+            decimals: 18
+        });
+
+        setupEventListeners();
+    };
 </script>
+
 
 </body>
 </html>
