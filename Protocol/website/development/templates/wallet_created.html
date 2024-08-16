@@ -68,7 +68,7 @@
     <div class="buttons-container">
         <button id="buyCryptoButton" class="wallet-button" onclick="openMoonPayWidget()">Buy Crypto</button>
         <button class="wallet-button" onclick="showSelectionModal()">Send</button>
-        <button id="swapButton" class="wallet-button">Swap Tokens</button>
+        <button id="swapEthButton" class="wallet-button">Swap Tokens on Eth</button>
         <button id="swapPolygonButton" class="wallet-button">Swap Tokens on Polygon</button>
         <button id="swapBscButton" class="wallet-button">Swap Tokens on BSC</button>
     </div>
@@ -195,10 +195,10 @@
         </div>
     </div>
 
-    <!-- Swap Modal -->
-    <div id="swapModal" class="modal">
+    <!-- Swap Eth Modal -->
+    <div id="swapEthModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('swapModal')">&times;</span>
+            <span class="close" onclick="closeModal('swapEthModal')">&times;</span>
             <h2>Swap Tokens</h2>
 
             <label for="from-token-select">From Token:</label>
@@ -215,7 +215,7 @@
                 <!-- Tokens will be loaded dynamically -->
             </select>
 
-            <button id="confirmSwapButton" class="wallet-button">Swap</button>
+            <button id="confirmSwapEthButton" class="wallet-button">Swap</button>
         </div>
     </div>
 
@@ -743,11 +743,11 @@
     }
 
     function setupEventListeners() {
-    document.getElementById('swapButton').addEventListener('click', function() {
-        document.getElementById('swapModal').style.display = 'block';
+    document.getElementById('swapEthButton').addEventListener('click', function() {
+        document.getElementById('swapEthModal').style.display = 'block';
     });
 
-    document.getElementById('confirmSwapButton').addEventListener('click', swapTokens);
+    document.getElementById('confirmSwapEthButton').addEventListener('click', swapEthTokens);
 
     document.getElementById('swapPolygonButton').addEventListener('click', function() {
         document.getElementById('swapPolygonModal').style.display = 'block';
@@ -773,7 +773,7 @@
         document.getElementById(modalId).style.display = 'none';
     }
 
-    async function swapTokens() {
+    async function swapEthTokens() {
         const fromTokenAddress = document.getElementById('from-token-select').value;
         const toTokenAddress = document.getElementById('to-token-select').value;
         const amount = document.getElementById('from-amount').value;
@@ -892,7 +892,7 @@
             );
         }
         alert('Swap transaction successfully: ' + tx.hash);
-        closeModal('swapModal');
+        closeModal('swapEthModal');
     }
 
     async function swapTokensOnPolygon() {
