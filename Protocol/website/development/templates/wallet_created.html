@@ -74,7 +74,7 @@
     <!-- Chain Selection Modal -->
     <div id="chainSelectionModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeSwapModal('chainSelectionModal')">&times;</span>
+            <span class="close" onclick="closeModal('chainSelectionModal')">&times;</span>
             <h2>Select Chain</h2>
             <button id="selectEthChainButton" class="wallet-button">Ethereum</button>
             <button id="selectPolygonChainButton" class="wallet-button">Polygon</button>
@@ -207,7 +207,7 @@
     <!-- Swap Eth Modal -->
     <div id="swapEthModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeSwapModal('swapEthModal')">&times;</span>
+            <span class="close" onclick="closeModal('swapEthModal')">&times;</span>
             <h2>Swap Tokens</h2>
 
             <label for="from-token-select">From Token:</label>
@@ -231,7 +231,7 @@
     <!-- Swap Modal for Polygon -->
     <div id="swapPolygonModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeSwapModal('swapPolygonModal')">&times;</span>
+            <span class="close" onclick="closeModal('swapPolygonModal')">&times;</span>
             <h2>Swap Tokens on Polygon</h2>
 
             <label for="from-token-select-polygon">From Token:</label>
@@ -258,7 +258,7 @@
     <!-- Swap Modal for BSC -->
     <div id="swapBscModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeSwapModal('swapBscModal')">&times;</span>
+            <span class="close" onclick="closeModal('swapBscModal')">&times;</span>
             <h2>Swap Tokens on BSC</h2>
 
             <label for="from-token-select-bsc">From Token:</label>
@@ -438,10 +438,14 @@
             }
         }
 
-        function closeModal(type) {
-            const modal = document.getElementById(type + 'Modal');
-            modal.style.display = 'none';
-        }
+        function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+    } else {
+        console.error("Modal with id " + modalId + " not found");
+    }
+}
 
         window.onclick = function(event) {
             if (event.target.className === 'modal') {
@@ -751,16 +755,15 @@
         }
     }
 
-       function closeSwapModal(type) {
-        const modal = document.getElementById(type + 'Modal');
-        modal.style.display = 'none';
-    }
+//        function closeSwapModal(modalId) {
+//     const modal = document.getElementById(modalId);
+//     if (modal) {
+//         modal.style.display = 'none';
+//     }
+// }
 
-    window.onclick = function(event) {
-        if (event.target.className === 'modal') {
-            event.target.style.display = "none";
-        }
-    };
+
+
 
     function setupEventListeners() {
     // Button to open the network selection window
@@ -770,17 +773,17 @@
 
     // Buttons for selecting a network and opening the corresponding swap window
     document.getElementById('selectEthChainButton').addEventListener('click', function() {
-        closeSwapModal('chainSelectionModal');
+        closeModal('chainSelectionModal');
         document.getElementById('swapEthModal').style.display = 'block';
     });
 
     document.getElementById('selectPolygonChainButton').addEventListener('click', function() {
-        closeSwapModal('chainSelectionModal');
+        closeModal('chainSelectionModal');
         document.getElementById('swapPolygonModal').style.display = 'block';
     });
 
     document.getElementById('selectBscChainButton').addEventListener('click', function() {
-        closeSwapModal('chainSelectionModal');
+        closeModal('chainSelectionModal');
         document.getElementById('swapBscModal').style.display = 'block';
     });
 
@@ -916,7 +919,7 @@
             );
         }
         alert('Swap transaction successfully: ' + tx.hash);
-        closeSwapModal('swapEthModal');
+        closeModal('swapEthModal');
     }
 
     async function swapTokensOnPolygon() {
@@ -1019,7 +1022,7 @@
     }
 
     alert('Swap transaction completed successfully: ' + tx.hash);
-    closeSwapModal('swapPolygon');
+    closeModal('swapPolygon');
 }
 
     async function swapTokensOnBSC() {
@@ -1131,7 +1134,7 @@
         }
 
         alert('Swap transaction completed successfully: ' + tx.hash);
-        closeSwapModal('swapBsc');
+        closeModal('swapBsc');
     }
 
     document.addEventListener('DOMContentLoaded', () => {
