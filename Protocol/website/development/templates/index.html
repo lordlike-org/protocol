@@ -1,144 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Wallet</title>
-    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-</head>
 <body>
-    <h1>Welcome to LordLike Crypto Wallet</h1>
+<h1>Welcome to LordLike Crypto Wallet</h1>
 
-    <button id="createWalletBtn">Create Wallet</button>
-    <button id="accessWalletBtn">Import Wallet</button>
+<button id="createWalletBtn">Create Wallet</button>
+<button id="accessWalletBtn">Import Wallet</button>
 
-    <div id="chainSelection" style="display: none;">
-        <h2>Choose Blockchain:</h2>
-        <form id="chainForm" method="GET" action="{% url 'create_wallet' %}" onsubmit="generateEvmWallet(); return false;">
-            {% csrf_token %}
-            <input type="radio" id="evm" name="chain" value="evm" checked>
-            <label for="evm">EVM (Ethereum, Polygon, BNB Chain)</label><br>
-            <input type="radio" id="solana" name="chain" value="solana" disabled>
-            <label for="solana">Solana (not yet supported)</label><br>
-            <button type="submit">Next</button>
-        </form>
-    </div>
+<div id="chainSelection" style="display: none;">
+    <h2>Choose Blockchain:</h2>
+    <form id="chainForm" method="POST" action="{% url 'create_wallet' %}" onsubmit="return false;">
+        {% csrf_token %}
+        <input type="radio" id="evm" name="chain" value="evm" checked>
+        <label for="evm">EVM (Ethereum, Polygon, BNB Chain)</label><br>
+        <input type="radio" id="bitcoin" name="chain" value="bitcoin">
+        <label for="bitcoin">Bitcoin</label><br>
+        <button type="button" id="nextBtn">Next</button>
+    </form>
+</div>
 
-    <div id="accessWallet" style="display: none;">
-        <h2>Access Existing Wallet</h2>
-        <p>Enter Seed Phrase or Private Key:</p>
-        <textarea id="recoveryInput" rows="4" cols="50"></textarea><br>
-        <p>Enter password:</p>
-        <input type="password" id="passwordInput"><br>
-        <button onclick="accessWallet()">Import</button>
-    </div>
+<div id="accessWallet" style="display: none;">
+    <h2>Access Existing Wallet</h2>
+    <p>Enter Seed Phrase or Private Key:</p>
+    <textarea id="recoveryInput" rows="4" cols="50"></textarea><br>
+    <p>Enter password:</p>
+    <input type="password" id="passwordInput"><br>
+    <button onclick="accessWallet()">Import</button>
+</div>
 
-    <script>
-        const createWalletBtn = document.getElementById('createWalletBtn');
-        const accessWalletBtn = document.getElementById('accessWalletBtn');
-        const chainSelection = document.getElementById('chainSelection');
-        const accessWalletDiv = document.getElementById('accessWallet');
-        let chain;
+<script src="/static/js/bundle.js"></script>
+<script src="/static/js/bitcoinjs-lib.js"></script>
 
-        createWalletBtn.addEventListener('click', () => {
-            createWalletBtn.style.display = 'none';
-            chainSelection.style.display = 'block';
-        });
-
-        accessWalletBtn.addEventListener('click', () => {
-            accessWalletBtn.style.display = 'none';
-            accessWalletDiv.style.display = 'block';
-        });
-
-        chainForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-            chain = document.querySelector('input[name="chain"]:checked').value;
-            createPasswordScreen(); // Go to the password creation screen
-        });
-
-        function createPasswordScreen() {
-            const password = prompt("Enter a password to protect your wallet:");
-            if (password) {
-                generateEvmWallet(password);
-            }
-        }
-
-        async function generateEvmWallet(password) {
-            try {
-                const wallet = ethers.Wallet.createRandom();
-                const privateKey = wallet.privateKey;
-                const address = wallet.address;
-                const seedPhrase = wallet.mnemonic.phrase;
-
-                const encryptedKey = CryptoJS.AES.encrypt(privateKey, password).toString();
-                const encryptedSeedPhrase = CryptoJS.AES.encrypt(seedPhrase, password).toString();
-
-                localStorage.setItem('encryptedKey', encryptedKey);
-                localStorage.setItem('encryptedSeedPhrase', encryptedSeedPhrase);
-
-                // Redirect to the create_wallet page with wallet details
-                window.location.href = `/create_wallet/?address=${address}&seed_phrase=${encodeURIComponent(encryptedSeedPhrase)}&private_key=${encodeURIComponent(encryptedKey)}&chain=${chain}`;
-            } catch (error) {
-                console.error("Error when creating or encrypting a wallet:", error);
-                alert("An error has occurred. Please try again.");
-            }
-        }
-
-        async function accessWallet() {
-            const input = document.getElementById('recoveryInput').value.trim();
-            const password = document.getElementById('passwordInput').value.trim();
-            if (!input) {
-                alert('Enter Seed Phrase or Private Key');
-                return;
-            }
-            if (!password) {
-                alert('Enter password');
-                return;
-            }
-
-            try {
-                let wallet;
-                if (input.split(' ').length > 1) { // Checking if input is a seed phrase
-                    wallet = ethers.Wallet.fromMnemonic(input);
-                } else { // Otherwise it is a private key
-                    wallet = new ethers.Wallet(input);
-                }
-
-                const address = wallet.address;
-                const privateKey = wallet.privateKey;
-                const seedPhrase = wallet.mnemonic ? wallet.mnemonic.phrase : null;
-
-                // Redirect to wallet_created page with wallet details
-                if (seedPhrase) {
-                    const encryptedSeedPhrase = CryptoJS.AES.encrypt(seedPhrase, password).toString();
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = '{% url "wallet_created" %}';
-                    form.innerHTML = `
-                        <input type="hidden" name="address" value="${address}">
-                        <input type="hidden" name="seed_phrase" value="${encodeURIComponent(encryptedSeedPhrase)}">
-                        <input type="hidden" name="chain" value="${chain}">
-                        <input type="hidden" name="csrfmiddlewaretoken" value="${document.querySelector('[name=csrfmiddlewaretoken]').value}">
-                    `;
-                    document.body.appendChild(form);
-                    form.submit();
-                } else {
-                    const encryptedPrivateKey = CryptoJS.AES.encrypt(privateKey, password).toString();
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = '{% url "wallet_created" %}';
-                    form.innerHTML = `
-                        <input type="hidden" name="address" value="${address}">
-                        <input type="hidden" name="private_key" value="${encodeURIComponent(encryptedPrivateKey)}">
-                        <input type="hidden" name="chain" value="${chain}">
-                        <input type="hidden" name="csrfmiddlewaretoken" value="${document.querySelector('[name=csrfmiddlewaretoken]').value}">
-                    `;
-                    document.body.appendChild(form);
-                    form.submit();
-                }
-            } catch (error) {
-                alert("An error has occurred. Please try again.");
-            }
-        }
-    </script>
 </body>
 </html>
