@@ -1,5 +1,5 @@
 python-telegram-bot~=21.3
-SQLAlchemy==1.4.22
+SQLAlchemy==2.0.32
 psycopg2-binary==2.9.3
 python-dotenv==0.18.0
 pip~=23.3.2
@@ -30,3 +30,6 @@ attrs~=23.2.0
 requests~=2.32.3
 web3~=6.19.0
 mnemonic~=0.21
+numpy~=2.1.0
+bitcoinlib~=0.6.15
+bip39~=0.0.2
