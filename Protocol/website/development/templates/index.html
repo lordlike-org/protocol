@@ -4,35 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Wallet</title>
+</head>
 <body>
-<h1>Welcome to LordLike Crypto Wallet</h1>
+    <h1>Welcome to LordLike Crypto Wallet</h1>
 
-<button id="createWalletBtn">Create Wallet</button>
-<button id="accessWalletBtn">Import Wallet</button>
+    <button id="createWalletBtn">Create Wallet</button>
+    <button id="accessWalletBtn">Import Wallet</button>
 
-<div id="chainSelection" style="display: none;">
-    <h2>Choose Blockchain:</h2>
-    <form id="chainForm" method="POST" action="{% url 'create_wallet' %}" onsubmit="return false;">
-        {% csrf_token %}
-        <input type="radio" id="evm" name="chain" value="evm" checked>
-        <label for="evm">EVM (Ethereum, Polygon, BNB Chain)</label><br>
-        <input type="radio" id="bitcoin" name="chain" value="bitcoin">
-        <label for="bitcoin">Bitcoin</label><br>
-        <button type="button" id="nextBtn">Next</button>
-    </form>
-</div>
+    <div id="chainSelection" style="display: none;">
+        <h2>Choose Blockchain:</h2>
+        <form id="chainForm" method="POST" data-create-url="{% url 'create_wallet' %}" data-import-url="{% url 'wallet_created' %}" onsubmit="return false;">
+    {% csrf_token %}
+    <input type="radio" id="evm" name="chain" value="evm" checked>
+    <label for="evm">EVM (Ethereum, Polygon, BNB Chain)</label><br>
+    <input type="radio" id="bitcoin" name="chain" value="bitcoin">
+    <label for="bitcoin">Bitcoin</label><br>
+    <button type="button" id="nextBtn">Next</button>
+</form>
 
-<div id="accessWallet" style="display: none;">
-    <h2>Access Existing Wallet</h2>
-    <p>Enter Seed Phrase or Private Key:</p>
-    <textarea id="recoveryInput" rows="4" cols="50"></textarea><br>
-    <p>Enter password:</p>
-    <input type="password" id="passwordInput"><br>
-    <button onclick="accessWallet()">Import</button>
-</div>
+    </div>
 
-<script src="/static/js/bundle.js"></script>
-<script src="/static/js/bitcoinjs-lib.js"></script>
+    <div id="accessWallet" style="display: none;">
+        <h2>Access Existing Wallet</h2>
+        <p>Enter Seed Phrase or Private Key:</p>
+        <textarea id="recoveryInput" rows="4" cols="50"></textarea><br>
+        <p>Enter password:</p>
+        <input type="password" id="passwordInput"><br>
+        <button id="importBtn">Import</button>
+    </div>
 
+    <script src="/static/js/bundle.js"></script>
+    <script src="/static/js/bitcoinjs-lib.js"></script>
 </body>
 </html>

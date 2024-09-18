@@ -4,24 +4,33 @@ const CryptoJS = require('crypto-js');
 const bip39 = require('bip39');
 const bip32 = require('bip32');
 
+// DOM Elements
 const createWalletBtn = document.getElementById('createWalletBtn');
 const accessWalletBtn = document.getElementById('accessWalletBtn');
 const chainSelection = document.getElementById('chainSelection');
 const accessWalletDiv = document.getElementById('accessWallet');
 const chainForm = document.getElementById('chainForm');
+const importBtn = document.getElementById('importBtn');
+
+// Извлечение URL из data-* атрибута
+const createWalletUrl = chainForm.getAttribute('data-create-url');
+
 let chain;
 
-    createWalletBtn.addEventListener('click', () => {
-        createWalletBtn.style.display = 'none';
-        chainSelection.style.display = 'block';
-    });
+createWalletBtn.addEventListener('click', () => {
+    createWalletBtn.style.display = 'none';
+    chainSelection.style.display = 'block';
+});
 
-    accessWalletBtn.addEventListener('click', () => {
-        accessWalletBtn.style.display = 'none';
-        accessWalletDiv.style.display = 'block';
-    });
+accessWalletBtn.addEventListener('click', () => {
+    accessWalletBtn.style.display = 'none';
+    accessWalletDiv.style.display = 'block';
+});
 
-    document.getElementById('nextBtn').addEventListener('click', initiateWalletCreation);
+// Add the event listener for the Import button
+importBtn.addEventListener('click', accessWallet);
+
+document.getElementById('nextBtn').addEventListener('click', initiateWalletCreation);
 
 function initiateWalletCreation() {
     chain = document.querySelector('input[name="chain"]:checked').value;
@@ -58,7 +67,7 @@ async function generateEvmWallet(password) {
         localStorage.setItem('encryptedKey', encryptedKey);
         localStorage.setItem('encryptedSeedPhrase', encryptedSeedPhrase);
 
-        window.location.href = `/create_wallet/?address=${address}&seed_phrase=${encodeURIComponent(encryptedSeedPhrase)}&private_key=${encodeURIComponent(encryptedKey)}&chain=${chain}`;
+        window.location.href = `${createWalletUrl}?address=${address}&seed_phrase=${encodeURIComponent(encryptedSeedPhrase)}&private_key=${encodeURIComponent(encryptedKey)}&chain=${chain}`;
     } catch (error) {
         console.error("Error when creating or encrypting a wallet:", error);
         alert("An error has occurred. Please try again.");
@@ -66,34 +75,37 @@ async function generateEvmWallet(password) {
 }
 
 async function generateBitcoinWallet(password) {
-try {
-    const mnemonic = bip39.generateMnemonic();
-    const seed = await bip39.mnemonicToSeed(mnemonic);
+    try {
+        const mnemonic = bip39.generateMnemonic();
+        const seed = await bip39.mnemonicToSeed(mnemonic);
 
-    const root = bip32.fromSeed(seed, bitcoin.networks.bitcoin);
-    const account = root.derivePath("m/44'/0'/0'");
-    const child = account.derive(0).derive(0);
+        const root = bip32.fromSeed(seed, bitcoin.networks.bitcoin);
+        const account = root.derivePath("m/44'/0'/0'");
+        const child = account.derive(0).derive(0);
 
-    const { address } = bitcoin.payments.p2pkh({ pubkey: child.publicKey });
-    const privateKey = child.toWIF();
+        const { address } = bitcoin.payments.p2pkh({ pubkey: child.publicKey });
+        const privateKey = child.toWIF();
 
-    const encryptedPrivateKey = CryptoJS.AES.encrypt(privateKey, password).toString();
-    const encryptedSeedPhrase = CryptoJS.AES.encrypt(mnemonic, password).toString();
+        const encryptedPrivateKey = CryptoJS.AES.encrypt(privateKey, password).toString();
+        const encryptedSeedPhrase = CryptoJS.AES.encrypt(mnemonic, password).toString();
 
-    localStorage.setItem('encryptedPrivateKey', encryptedPrivateKey);
-    localStorage.setItem('encryptedSeedPhrase', encryptedSeedPhrase);
+        localStorage.setItem('encryptedPrivateKey', encryptedPrivateKey);
+        localStorage.setItem('encryptedSeedPhrase', encryptedSeedPhrase);
 
-    // Redirect in the same way as for EVM
-    window.location.href = `/create_wallet/?address=${address}&seed_phrase=${encodeURIComponent(encryptedSeedPhrase)}&private_key=${encodeURIComponent(encryptedPrivateKey)}&chain=${chain}`;
-} catch (error) {
-    console.error("Error creating Bitcoin wallet:", error);
-    alert("An error occurred. Please try again.");
-}
+        window.location.href = `${createWalletUrl}?address=${address}&seed_phrase=${encodeURIComponent(encryptedSeedPhrase)}&private_key=${encodeURIComponent(encryptedPrivateKey)}&chain=${chain}`;
+    } catch (error) {
+        console.error("Error creating Bitcoin wallet:", error);
+        alert("An error occurred. Please try again.");
+    }
 }
 
 async function accessWallet() {
     const input = document.getElementById('recoveryInput').value.trim();
     const password = document.getElementById('passwordInput').value.trim();
+
+    // Извлечение URL для импорта кошелька
+    const importWalletUrl = chainForm.getAttribute('data-import-url');
+
     if (!input) {
         alert('Enter Seed Phrase or Private Key');
         return;
@@ -119,7 +131,7 @@ async function accessWallet() {
             const encryptedSeedPhrase = CryptoJS.AES.encrypt(seedPhrase, password).toString();
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = '{% url "wallet_created" %}';
+            form.action = importWalletUrl; // Используем URL для импорта кошелька
             form.innerHTML = `
                 <input type="hidden" name="address" value="${address}">
                 <input type="hidden" name="seed_phrase" value="${encodeURIComponent(encryptedSeedPhrase)}">
@@ -132,7 +144,7 @@ async function accessWallet() {
             const encryptedPrivateKey = CryptoJS.AES.encrypt(privateKey, password).toString();
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = '{% url "wallet_created" %}';
+            form.action = importWalletUrl; // Используем URL для импорта кошелька
             form.innerHTML = `
                 <input type="hidden" name="address" value="${address}">
                 <input type="hidden" name="private_key" value="${encodeURIComponent(encryptedPrivateKey)}">
@@ -146,3 +158,4 @@ async function accessWallet() {
         alert("An error has occurred. Please try again.");
     }
 }
+
