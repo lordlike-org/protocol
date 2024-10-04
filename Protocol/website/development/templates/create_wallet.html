@@ -18,7 +18,7 @@
         {% csrf_token %}
         <input type="hidden" name="address" id="addressInput">
         <input type="hidden" name="chain" id="chainInput">
-        <button type="submit" id="confirmBtn" disabled>OK</button>
+        <button type="button" id="confirmBtn" onclick="submitForm()">OK</button> <!-- Button to submit the form -->
     </form>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
@@ -42,8 +42,23 @@
             alert('Chain not provided');
         }
 
-        const seedPhraseArea = document.getElementById('seedPhrase');
-        const confirmBtn = document.getElementById('confirmBtn');
+        function submitForm() {
+            const form = document.getElementById('walletForm');
+            const chain = document.getElementById('chainInput').value;
+            const address = document.getElementById('addressInput').value;
+
+            // Create a new form for sending
+            const newForm = document.createElement('form');
+            newForm.method = 'POST';
+            newForm.action = form.action;
+            newForm.innerHTML = `
+                <input type="hidden" name="address" value="${address}">
+                <input type="hidden" name="chain" value="${chain}">
+                <input type="hidden" name="csrfmiddlewaretoken" value="${document.querySelector('[name=csrfmiddlewaretoken]').value}">
+            `;
+            document.body.appendChild(newForm);
+            newForm.submit(); // sending form
+        }
 
         function showSeedPhrase() {
             const password = prompt("Enter the password to decrypt Seed Phrase:");
@@ -53,9 +68,9 @@
                     if (!seedPhrase) {
                         throw new Error('Failed to decrypt seed phrase');
                     }
-                    seedPhraseArea.value = seedPhrase;
-                    seedPhraseArea.style.display = 'block';
-                    confirmBtn.disabled = false;
+                    document.getElementById('seedPhrase').value = seedPhrase;
+                    document.getElementById('seedPhrase').style.display = 'block';
+                    document.getElementById('confirmBtn').disabled = false;
                 } catch (error) {
                     alert("Invalid password or decryption error!");
                 }
@@ -63,6 +78,7 @@
         }
 
         function copyToClipboard() {
+            const seedPhraseArea = document.getElementById('seedPhrase');
             if (seedPhraseArea.style.display === 'block') {
                 seedPhraseArea.select();
                 document.execCommand('copy');
