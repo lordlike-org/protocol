@@ -52,24 +52,30 @@
 </head>
 <body>
     <h2>Wallet Created Successfully</h2>
-    <p><strong>Address:</strong> {{ address }}</p>
-    <h3>Balances:</h3>
+<p><strong>Address:</strong> {{ address }}</p>
+
+{% if chain == 'evm' %}
+    <h3>EVM Balances:</h3>
     <p><strong>Ethereum (ETH):</strong> {{ balance_eth }} ETH</p>
     <p><strong>Binance Smart Chain (BNB):</strong> {{ balance_bnb }} BNB</p>
     <p><strong>Polygon (MATIC):</strong> {{ balance_matic }} MATIC</p>
     <ul>
-    {% for token, balance in token_balances.items %}
-        <li><strong>{{ token }}:</strong> {{ balance }}</li>
-    {% endfor %}
-    <li><strong>USDT (Ethereum):</strong> {{ balance_usdt_eth }} USDT</li>
-    <li><strong>USDT (BSC):</strong> {{ balance_usdt_bnb }} USDT</li>
-    <li><strong>USDT (Polygon):</strong> {{ balance_usdt_matic }} USDT</li>
+        {% for token, balance in token_balances.items %}
+            <li><strong>{{ token }}:</strong> {{ balance }}</li>
+        {% endfor %}
+        <li><strong>USDT (Ethereum):</strong> {{ balance_usdt_eth }} USDT</li>
+        <li><strong>USDT (BSC):</strong> {{ balance_usdt_bnb }} USDT</li>
+        <li><strong>USDT (Polygon):</strong> {{ balance_usdt_matic }} USDT</li>
     </ul>
     <div class="buttons-container">
         <button id="buyCryptoButton" class="wallet-button" onclick="openMoonPayWidget()">Buy Crypto</button>
         <button class="wallet-button" onclick="showSelectionModal()">Send</button>
         <button id="selectChainButton" class="wallet-button">Swap Tokens</button>
     </div>
+{% elif chain == 'bitcoin' %}
+    <h3>Bitcoin Balance:</h3>
+    <p><strong>Bitcoin (BTC):</strong> {{ balance_btc }} BTC</p>
+{% endif %}
 
     <!-- Chain Selection Modal -->
     <div id="chainSelectionModal" class="modal">
@@ -279,13 +285,15 @@
         </div>
     </div>
 
-    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@uniswap/sdk@3.0.3/dist/uniswap-sdk.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
     <script>
         const address = '{{ address }}';
         const encryptedKey = localStorage.getItem('encryptedKey');
+        console.log('Encrypted Key:', encryptedKey);
+
         const chain = '{{ chain }}';
 
         const RPC_URLS = {
