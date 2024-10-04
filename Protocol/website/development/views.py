@@ -4,7 +4,6 @@ from web3 import Web3
 from web3.middleware import geth_poa_middleware
 import requests
 
-
 # Connect to public nodes for different blockchains
 eth_w3 = Web3(Web3.HTTPProvider('https://mainnet.infura.io/v3/a4c60cf1bd7e4c288d9221144f9efbe2'))
 bnb_w3 = Web3(Web3.HTTPProvider('https://bsc-dataseed.binance.org/'))
@@ -146,33 +145,69 @@ def get_token_balances(address):
     return tokens
 
 
+import requests
+
+
+def get_bitcoin_balance(address):
+    try:
+        url = f'https://blockchain.info/rawaddr/{address}'
+        response = requests.get(url)
+        data = response.json()
+        # Balance in satoshi, convert to bitcoins
+        balance_btc = data['final_balance'] / 1e8
+        return balance_btc
+    except Exception as e:
+        print(f"Error fetching bitcoin balance: {e}")
+        return None
+
+
 def wallet_created(request):
     if request.method == 'POST':
         address = request.POST.get('address')
+        chain = request.POST.get('chain')  # Get the chain type ('evm' or 'bitcoin')
 
-        # Getting ETH, BNB and MATIC balances
+        # If it's a Bitcoin wallet
+        if chain == 'bitcoin':
+            balance_btc = get_bitcoin_balance(address)  # Get Bitcoin balance
+            return render(request, 'wallet_created.html', {
+                'address': address,
+                'chain': chain,  # Pass 'chain' to the template
+                'balance_btc': balance_btc,
+                'balance_eth': None,
+                'balance_bnb': None,
+                'balance_matic': None,
+                'balance_usdt_eth': None,
+                'balance_usdt_bnb': None,
+                'balance_usdt_matic': None,
+                'token_balances': {}
+            })
+
+        # For EVM networks, continue fetching balances
         balance_eth = get_balance(eth_w3, address)
         balance_bnb = get_balance(bnb_w3, address)
         balance_matic = get_balance(polygon_w3, address)
 
-        # Getting USDT balances on different networks
+        # Fetch USDT balances for different networks
         balance_usdt_eth = get_token_balance(eth_w3, USDT_CONTRACT_ADDRESSES['eth'], address)
         balance_usdt_bnb = get_token_balance(bnb_w3, USDT_CONTRACT_ADDRESSES['bnb'], address)
         balance_usdt_matic = get_token_balance(polygon_w3, USDT_CONTRACT_ADDRESSES['matic'], address)
 
-        # Getting token balances
+        # Fetch token balances
         token_balances = get_token_balances(address)
 
         return render(request, 'wallet_created.html', {
             'address': address,
+            'chain': chain,  # Pass 'chain' to the template
             'balance_eth': balance_eth,
             'balance_bnb': balance_bnb,
             'balance_matic': balance_matic,
             'balance_usdt_eth': balance_usdt_eth,
             'balance_usdt_bnb': balance_usdt_bnb,
             'balance_usdt_matic': balance_usdt_matic,
-            'token_balances': token_balances
+            'token_balances': token_balances,
+            'balance_btc': None  # Ensure balance_btc is defined
         })
+
     return render(request, 'index.html')
 
 
