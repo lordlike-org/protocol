@@ -12,7 +12,7 @@ const accessWalletDiv = document.getElementById('accessWallet');
 const chainForm = document.getElementById('chainForm');
 const importBtn = document.getElementById('importBtn');
 
-// Извлечение URL из data-* атрибута
+// Extract URL from data-* attribute
 const createWalletUrl = chainForm.getAttribute('data-create-url');
 
 let chain;
@@ -102,22 +102,81 @@ async function generateBitcoinWallet(password) {
 async function accessWallet() {
     const input = document.getElementById('recoveryInput').value.trim();
     const password = document.getElementById('passwordInput').value.trim();
+    const chain = document.querySelector('input[name="chain_import"]:checked').value; // getting a chain
 
-    // Извлечение URL для импорта кошелька
+    console.log("chain: " + chain);
+
+    // Extracting URL for wallet import
     const importWalletUrl = chainForm.getAttribute('data-import-url');
 
     if (!input) {
-        alert('Enter Seed Phrase or Private Key');
+        alert('Enter your seed phrase or private key');
         return;
     }
     if (!password) {
-        alert('Enter password');
+        alert('Enter the password');
         return;
     }
 
     try {
+        if (chain === 'bitcoin') {
+            // Processing for bitcoin wallets
+            await importBitcoinWallet(input, password, importWalletUrl);
+        } else if (chain === 'evm') {
+            // Processing for EVM wallets
+            await importEvmWallet(input, password, importWalletUrl);
+        } else {
+            alert('The selected network is not supported.');
+        }
+    } catch (error) {
+        alert("An error has occurred. Please try again..");
+    }
+}
+
+
+// Importing a Bitcoin Wallet
+async function importBitcoinWallet(input, password, importWalletUrl) {
+    try {
+        // Checking the validity of a seed phrase
+        if (input.split(' ').length > 1) {
+            const seed = await bip39.mnemonicToSeed(input);  // Converting seed phrase to seed
+            const root = bip32.fromSeed(seed, bitcoin.networks.bitcoin);
+            const child = root.derivePath("m/44'/0'/0'/0/0");  // Derivation for Bitcoin wallet
+            const { address } = bitcoin.payments.p2pkh({ pubkey: child.publicKey });  // Bitcoin address generation
+
+            const privateKey = child.toWIF();  // Getting a private key
+
+            // Encrypting a private key
+            const encryptedPrivateKey = CryptoJS.AES.encrypt(privateKey, password).toString();
+
+            // Sending data via form to server
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = importWalletUrl;
+            form.innerHTML = `
+                <input type="hidden" name="address" value="${address}">  <!-- transfering the bitcoin address -->
+                <input type="hidden" name="private_key" value="${encodeURIComponent(encryptedPrivateKey)}">
+                <input type="hidden" name="chain" value="bitcoin">  <!-- indicating that this is Bitcoin -->
+                <input type="hidden" name="csrfmiddlewaretoken" value="${document.querySelector('[name=csrfmiddlewaretoken]').value}">
+            `;
+            document.body.appendChild(form);
+            form.submit();
+        } else {
+            alert('Please enter a valid Bitcoin seed phrase.');
+        }
+    } catch (error) {
+        console.error("Error importing Bitcoin wallet:", error);
+        alert("An error occurred while importing Bitcoin wallet. Please try again.");
+    }
+}
+
+
+// import EVM-wallet
+async function importEvmWallet(input, password, importWalletUrl) {
+    let decryptedPrivateKey;
+    try {
         let wallet;
-        if (input.split(' ').length > 1) { // Checking if input is a seed phrase
+        if (input.split(' ').length > 1) { // Check if input is a seed phrase
             wallet = ethers.Wallet.fromMnemonic(input);
         } else { // Otherwise it is a private key
             wallet = new ethers.Wallet(input);
@@ -131,31 +190,34 @@ async function accessWallet() {
             const encryptedSeedPhrase = CryptoJS.AES.encrypt(seedPhrase, password).toString();
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = importWalletUrl; // Используем URL для импорта кошелька
+            form.action = importWalletUrl;  // use URL for wallet importing
             form.innerHTML = `
                 <input type="hidden" name="address" value="${address}">
                 <input type="hidden" name="seed_phrase" value="${encodeURIComponent(encryptedSeedPhrase)}">
-                <input type="hidden" name="chain" value="${chain}">
+                <input type="hidden" name="chain" value="evm">
                 <input type="hidden" name="csrfmiddlewaretoken" value="${document.querySelector('[name=csrfmiddlewaretoken]').value}">
             `;
             document.body.appendChild(form);
             form.submit();
         } else {
             const encryptedPrivateKey = CryptoJS.AES.encrypt(privateKey, password).toString();
+            localStorage.setItem('encryptedKey', encryptedPrivateKey);
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = importWalletUrl; // Используем URL для импорта кошелька
+            form.action = importWalletUrl;  // use URL for wallet importing
             form.innerHTML = `
                 <input type="hidden" name="address" value="${address}">
                 <input type="hidden" name="private_key" value="${encodeURIComponent(encryptedPrivateKey)}">
-                <input type="hidden" name="chain" value="${chain}">
+                <input type="hidden" name="chain" value="evm">
                 <input type="hidden" name="csrfmiddlewaretoken" value="${document.querySelector('[name=csrfmiddlewaretoken]').value}">
             `;
             document.body.appendChild(form);
             form.submit();
         }
     } catch (error) {
+        console.error("Error importing EVM wallet:", error);
         alert("An error has occurred. Please try again.");
     }
 }
+
 
