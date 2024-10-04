@@ -15562,24 +15562,84 @@ async function generateBitcoinWallet(password) {
 async function accessWallet() {
     const input = document.getElementById('recoveryInput').value.trim();
     const password = document.getElementById('passwordInput').value.trim();
+    const chain = document.querySelector('input[name="chain_import"]:checked').value; // Получаем chain
+
+    console.log("chain: " + chain);
 
     // Извлечение URL для импорта кошелька
     const importWalletUrl = chainForm.getAttribute('data-import-url');
 
     if (!input) {
-        alert('Enter Seed Phrase or Private Key');
+        alert('Введите сид-фразу или приватный ключ');
         return;
     }
     if (!password) {
-        alert('Enter password');
+        alert('Введите пароль');
         return;
     }
 
     try {
+        if (chain === 'bitcoin') {
+            // Обработка для биткоин-кошельков
+            await importBitcoinWallet(input, password, importWalletUrl);
+        } else if (chain === 'evm') {
+            // Обработка для EVM-кошельков
+            await importEvmWallet(input, password, importWalletUrl);
+        } else {
+            alert('Выбранная сеть не поддерживается.');
+        }
+    } catch (error) {
+        alert("Произошла ошибка. Пожалуйста, попробуйте еще раз.");
+    }
+}
+
+
+// Импорт биткоин-кошелька
+async function importBitcoinWallet(input, password, importWalletUrl) {
+    try {
+        // Проверка на валидность сид-фразы
+        if (input.split(' ').length > 1) {
+            const seed = await bip39.mnemonicToSeed(input);  // Конвертация сид-фразы в seed
+            const root = bip32.fromSeed(seed, bitcoin.networks.bitcoin);
+            const child = root.derivePath("m/44'/0'/0'/0/0");  // Деривация для биткоин-кошелька
+            const { address } = bitcoin.payments.p2pkh({ pubkey: child.publicKey });  // Генерация биткоин-адреса
+            console.log("Generated Bitcoin address: ", address);  // Для отладки
+
+            const privateKey = child.toWIF();  // Получение приватного ключа
+
+            // Шифрование приватного ключа
+            const encryptedPrivateKey = CryptoJS.AES.encrypt(privateKey, password).toString();
+
+            // Отправка данных через форму на сервер
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = importWalletUrl;
+            form.innerHTML = `
+                <input type="hidden" name="address" value="${address}">  <!-- Передаем биткоин-адрес -->
+                <input type="hidden" name="private_key" value="${encodeURIComponent(encryptedPrivateKey)}">
+                <input type="hidden" name="chain" value="bitcoin">  <!-- Указываем, что это биткоин -->
+                <input type="hidden" name="csrfmiddlewaretoken" value="${document.querySelector('[name=csrfmiddlewaretoken]').value}">
+            `;
+            document.body.appendChild(form);
+            form.submit();
+        } else {
+            alert('Please enter a valid Bitcoin seed phrase.');
+        }
+    } catch (error) {
+        console.error("Error importing Bitcoin wallet:", error);
+        alert("An error occurred while importing Bitcoin wallet. Please try again.");
+    }
+}
+
+
+// Импорт EVM-кошелька
+async function importEvmWallet(input, password, importWalletUrl) {
+    let decryptedPrivateKey;
+    try {
         let wallet;
-        if (input.split(' ').length > 1) { // Checking if input is a seed phrase
+        if (input.split(' ').length > 1) { // Проверка, является ли ввод сид-фразой
             wallet = ethers.Wallet.fromMnemonic(input);
-        } else { // Otherwise it is a private key
+        } else { // Иначе это приватный ключ
             wallet = new ethers.Wallet(input);
         }
 
@@ -15591,33 +15651,36 @@ async function accessWallet() {
             const encryptedSeedPhrase = CryptoJS.AES.encrypt(seedPhrase, password).toString();
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = importWalletUrl; // Используем URL для импорта кошелька
+            form.action = importWalletUrl;  // Используем URL для импорта кошелька
             form.innerHTML = `
                 <input type="hidden" name="address" value="${address}">
                 <input type="hidden" name="seed_phrase" value="${encodeURIComponent(encryptedSeedPhrase)}">
-                <input type="hidden" name="chain" value="${chain}">
+                <input type="hidden" name="chain" value="evm">
                 <input type="hidden" name="csrfmiddlewaretoken" value="${document.querySelector('[name=csrfmiddlewaretoken]').value}">
             `;
             document.body.appendChild(form);
             form.submit();
         } else {
             const encryptedPrivateKey = CryptoJS.AES.encrypt(privateKey, password).toString();
+            localStorage.setItem('encryptedKey', encryptedPrivateKey);
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = importWalletUrl; // Используем URL для импорта кошелька
+            form.action = importWalletUrl;  // Используем URL для импорта кошелька
             form.innerHTML = `
                 <input type="hidden" name="address" value="${address}">
                 <input type="hidden" name="private_key" value="${encodeURIComponent(encryptedPrivateKey)}">
-                <input type="hidden" name="chain" value="${chain}">
+                <input type="hidden" name="chain" value="evm">
                 <input type="hidden" name="csrfmiddlewaretoken" value="${document.querySelector('[name=csrfmiddlewaretoken]').value}">
             `;
             document.body.appendChild(form);
             form.submit();
         }
     } catch (error) {
+        console.error("Error importing EVM wallet:", error);
         alert("An error has occurred. Please try again.");
     }
 }
+
 
 
 },{"bip32":4,"bip39":273,"bitcoinjs-lib":302,"crypto-js":358,"ethers":402}],89:[function(require,module,exports){
