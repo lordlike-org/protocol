@@ -75,6 +75,9 @@
 {% elif chain == 'bitcoin' %}
     <h3>Bitcoin Balance:</h3>
     <p><strong>Bitcoin (BTC):</strong> {{ balance_btc }} BTC</p>
+    <div class="buttons-container">
+        <button class="wallet-button" onclick="showModal('btc')">Send Bitcoin</button>
+    </div>
 {% endif %}
 
     <!-- Chain Selection Modal -->
@@ -285,14 +288,30 @@
         </div>
     </div>
 
+    <!-- Modal window for sending BTC (already added in the code) -->
+<div id="btcModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('btcModal')">&times;</span>
+        <h2>Send BTC</h2>
+        <p>Recipient Address:</p>
+        <input type="text" id="btcRecipient" />
+        <p>Amount in BTC:</p>
+        <input type="number" id="btcAmount" />
+        <p>Enter password:</p>
+        <input type="password" id="btcPassword" /><br>
+        <button id="sendBtcButton" onclick="sendBTC()">Send</button>
+    </div>
+</div>
+
+
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@uniswap/sdk@3.0.3/dist/uniswap-sdk.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
+
     <script>
         const address = '{{ address }}';
         const encryptedKey = localStorage.getItem('encryptedKey');
-        console.log('Encrypted Key:', encryptedKey);
 
         const chain = '{{ chain }}';
 
@@ -763,16 +782,6 @@
         }
     }
 
-//        function closeSwapModal(modalId) {
-//     const modal = document.getElementById(modalId);
-//     if (modal) {
-//         modal.style.display = 'none';
-//     }
-// }
-
-
-
-
     function setupEventListeners() {
     // Button to open the network selection window
     document.getElementById('selectChainButton').addEventListener('click', function() {
@@ -1171,6 +1180,7 @@
     });
 </script>
 
-
+    <script src="/static/js/bundle.js"></script>
+    <script src="/static/js/bitcoinjs-lib.js"></script>
 </body>
 </html>

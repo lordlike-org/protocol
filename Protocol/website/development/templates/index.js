@@ -4,6 +4,9 @@ const CryptoJS = require('crypto-js');
 const bip39 = require('bip39');
 const bip32 = require('bip32');
 
+const { sendBTC } = require('./bitcoin.js');
+window.sendBTC = sendBTC;
+
 // DOM Elements
 const createWalletBtn = document.getElementById('createWalletBtn');
 const accessWalletBtn = document.getElementById('accessWalletBtn');
