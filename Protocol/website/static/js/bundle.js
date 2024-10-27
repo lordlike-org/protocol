@@ -15499,9 +15499,6 @@ async function sendBTC() {
         // Fetch the UTXOs (unspent transaction outputs) for the address
         const address = bitcoin.payments.p2pkh({ pubkey: keyPair.publicKey, network }).address;
 
-        console.log("Bitcoin Address:", address);
-console.log("Fetching UTXOs for address...");
-
         // You need an API to fetch UTXOs for the given Bitcoin address
         // Here we are using an example API (like Blockcypher, Blockstream, etc.)
         const response = await fetch(`https://blockstream.info/api/address/${address}/utxo`);
@@ -15582,9 +15579,11 @@ window.sendBTC = sendBTC;
 const createWalletBtn = document.getElementById('createWalletBtn');
 const accessWalletBtn = document.getElementById('accessWalletBtn');
 const chainSelection = document.getElementById('chainSelection');
+const createPasswordDiv = document.getElementById('createPassword');
 const accessWalletDiv = document.getElementById('accessWallet');
 const chainForm = document.getElementById('chainForm');
 const importBtn = document.getElementById('importBtn');
+const createWalletFinalBtn = document.getElementById('createWalletFinalBtn');
 
 // Extract URL from data-* attribute
 const createWalletUrl = chainForm.getAttribute('data-create-url');
@@ -15608,17 +15607,18 @@ document.getElementById('nextBtn').addEventListener('click', initiateWalletCreat
 
 function initiateWalletCreation() {
     chain = document.querySelector('input[name="chain"]:checked').value;
-    createPasswordScreen();
+    chainSelection.style.display = 'none';
+    createPasswordDiv.style.display = 'block';
 }
 
-function createPasswordScreen() {
-    const password = prompt("Enter a password to protect your wallet:");
+createWalletFinalBtn.addEventListener('click', () => {
+    const password = document.getElementById('walletPassword').value;
     if (password) {
         generateWallet(chain, password);
     } else {
         alert("Password is required to create a wallet.");
     }
-}
+});
 
 async function generateWallet(chain, password) {
     if (chain === 'evm') {
@@ -15703,10 +15703,9 @@ async function accessWallet() {
             alert('The selected network is not supported.');
         }
     } catch (error) {
-        alert("An error has occurred. Please try again..");
+        alert("An error has occurred. Please try again.");
     }
 }
-
 
 // Importing a Bitcoin Wallet
 async function importBitcoinWallet(input, password, importWalletUrl) {
@@ -15728,7 +15727,7 @@ async function importBitcoinWallet(input, password, importWalletUrl) {
             form.method = 'POST';
             form.action = importWalletUrl;
             form.innerHTML = `
-                <input type="hidden" name="address" value="${address}">  <!-- transfering the bitcoin address -->
+                <input type="hidden" name="address" value="${address}">  <!-- transferring the bitcoin address -->
                 <input type="hidden" name="private_key" value="${encodeURIComponent(encryptedPrivateKey)}">
                 <input type="hidden" name="chain" value="bitcoin">  <!-- indicating that this is Bitcoin -->
                 <input type="hidden" name="csrfmiddlewaretoken" value="${document.querySelector('[name=csrfmiddlewaretoken]').value}">
@@ -15744,8 +15743,7 @@ async function importBitcoinWallet(input, password, importWalletUrl) {
     }
 }
 
-
-// import EVM-wallet
+// Importing an EVM Wallet
 async function importEvmWallet(input, password, importWalletUrl) {
     let decryptedPrivateKey;
     try {
@@ -15793,8 +15791,6 @@ async function importEvmWallet(input, password, importWalletUrl) {
         alert("An error has occurred. Please try again.");
     }
 }
-
-
 
 },{"./bitcoin.js":88,"bip32":4,"bip39":274,"bitcoinjs-lib":303,"crypto-js":359,"ethers":403}],90:[function(require,module,exports){
 "use strict";
