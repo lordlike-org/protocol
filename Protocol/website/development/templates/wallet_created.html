@@ -276,7 +276,7 @@
         <div class="settings-history-section">
             <button id="settingsButton" class="settings-button btn btn-secondary" onclick="openSettings()">Settings</button>
             <button id="historyButton" class="history-button btn btn-secondary" onclick="openHistory()">History Transactions</button>
-            <button id="QrCodeButton" class="QrCodeButton-button btn btn-secondary" onclick="QrCodeButton()">Qr-Code</button>
+            <button id="QrCodeButton" class="QrCodeButton-button btn btn-secondary" onclick="showQrCode()">QR-Code</button>
         </div>
     </div>
 
@@ -289,6 +289,16 @@
             <button id="selectEthChainButton" class="btn btn-secondary my-2 w-100" onclick="showModal('swapEth')">Ethereum</button>
             <button id="selectPolygonChainButton" class="btn btn-secondary my-2 w-100" onclick="showModal('swapPolygon')">Polygon</button>
             <button id="selectBscChainButton" class="btn btn-secondary my-2 w-100" onclick="showModal('swapBsc')">BSC</button>
+        </div>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div id="qrCodeModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('qrCodeModal')">&times;</span>
+            <h3>Wallet Address QR Code</h3>
+            <p id="walletAddress"></p>
+            <div id="qrCodeContainer"></div>
         </div>
     </div>
 
@@ -620,6 +630,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@uniswap/sdk@3.0.3/dist/uniswap-sdk.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 
 
     <script>
@@ -655,6 +667,39 @@
         let bnbBalance = parseFloat('{{ balance_bnb }}'); // Assuming the balance is passed from the server
         let maticBalance = parseFloat('{{ balance_matic }}'); // Assuming the balance is passed from the server
 
+        function showQrCode() {
+            if (!address || address.trim() === "") {
+                console.error("Address is empty or undefined");
+                return;
+            }
+
+            // Show a modal window
+            const modal = document.getElementById('qrCodeModal');
+            modal.style.display = 'block';
+
+            // Checking the availability of the container for the QR code
+            const qrCodeContainer = document.getElementById('qrCodeContainer');
+            if (!qrCodeContainer) {
+                console.error("QR Code container not found");
+                return;
+            }
+
+            // Clearing the QR code container before regeneration (to prevent overlaps)
+            qrCodeContainer.innerHTML = '';
+
+            // Generate QR code
+            try {
+                new QRCode(qrCodeContainer, {
+                    text: address,
+                    width: 250,
+                    height: 250,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff"
+                });
+            } catch (error) {
+                console.error("Error generating QR Code:", error);
+            }
+        }
 
         async function fetchUsdRates() {
             try {
