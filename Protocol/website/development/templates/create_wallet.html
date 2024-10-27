@@ -1,28 +1,145 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Create Wallet</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Wallet</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        body {
+            background-color: #f8f9fa;
+            color: #343a40;
+            font-family: 'Arial', sans-serif;
+        }
+        .container {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .main-header {
+            text-align: left;
+            margin-bottom: 40px;
+        }
+        .main-header h2 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+        .form-section {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-top: 40px;
+            width: 100%;
+        }
+        label, p {
+            color: #343a40;
+        }
+        .form-control {
+            background-color: #f8f9fa;
+            color: #343a40;
+            border: 1px solid #ced4da;
+            border-radius: 10px;
+        }
+        .form-control:focus {
+            background-color: #ffffff;
+            color: #343a40;
+            border-color: #28a745;
+        }
+        .seed-input {
+            width: 100%;
+            height: 100px;
+            font-size: 1rem;
+            padding: 10px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+        }
+        .password-input {
+            width: 50%;
+            height: 50px;
+            font-size: 1.2rem;
+            padding: 10px;
+            border-radius: 100px;
+            margin-bottom: 20px;
+        }
+        .btn-primary, .btn-secondary {
+            background-color: #6c757d;
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: none;
+            transition: box-shadow 0.3s;
+            font-size: 1rem;
+        }
+        .btn-primary:hover, .btn-secondary:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        button[type="button"], button[type="submit"] {
+            margin-top: 20px;
+        }
+        .logo {
+            max-width: 150px;
+        }
+        .alert-message {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #ffc107;
+            color: #343a40;
+            border-radius: 5px;
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <h2>Confirm your EVM wallet</h2>
-    <p><strong>Chain:</strong> <span id="chainDisplay"></span></p>
-    <p><strong>Address:</strong> <span id="addressDisplay"></span></p>
-    <p><strong>Seed Phrase:</strong></p>
-    <textarea id="seedPhrase" readonly style="display: none;"></textarea>
-    <button onclick="showSeedPhrase()">Show Seed Phrase</button>
-    <button onclick="copyToClipboard()">Copy Seed Phrase</button>
+    <div class="container">
+        <div class="content">
+            <div class="main-header">
+                <h2>Confirm your wallet</h2>
+            </div>
 
-    <form id="walletForm" method="POST" action="{% url 'wallet_created' %}">
-        {% csrf_token %}
-        <input type="hidden" name="address" id="addressInput">
-        <input type="hidden" name="chain" id="chainInput">
-        <button type="button" id="confirmBtn" onclick="submitForm()">OK</button> <!-- Button to submit the form -->
-    </form>
+            <div id="alertMessage" class="alert-message"></div>
 
+            <div class="form-section">
+                <p><strong>Chain:</strong> <span id="chainDisplay"></span></p>
+                <p><strong>Address:</strong> <span id="addressDisplay"></span></p>
+                <p><strong>Seed Phrase:</strong></p>
+                <textarea id="seedPhrase" class="form-control seed-input" readonly style="display: none;"></textarea>
+
+                <div class="mt-3">
+                    <label for="walletPassword" class="form-label">Enter the password and press "Show seed phrase":</label>
+                    <input type="password" id="walletPassword" class="form-control password-input" required>
+                </div>
+
+                <div class="button-group mt-3">
+                    <button class="btn btn-primary me-3" onclick="showSeedPhrase()">Show Seed Phrase</button>
+                    <button class="btn btn-secondary" onclick="copyToClipboard()">Copy Seed Phrase</button>
+                </div>
+
+                <form id="walletForm" method="POST" action="{% url 'wallet_created' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="address" id="addressInput">
+                    <input type="hidden" name="chain" id="chainInput">
+                    <button type="button" id="confirmBtn" class="btn btn-primary mt-3" onclick="submitForm()" disabled>OK</button>
+                </form>
+            </div>
+        </div>
+        <div class="logo text-center" style="margin: 120px auto; padding-right: 250px;">
+            <img src="/static/images/Icon_white.png" alt="Logo" class="img-fluid" style="width: 400px; height: 400px; display: block; margin: 0 auto; object-fit: contain;">
+        </div>
+    </div>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script>
+        function displayAlert(message) {
+            const alertBox = document.getElementById('alertMessage');
+            alertBox.textContent = message;
+            alertBox.style.display = 'block';
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
         const address = urlParams.get('address');
         const chain = urlParams.get('chain');
@@ -32,36 +149,18 @@
             document.getElementById('addressDisplay').textContent = address;
             document.getElementById('addressInput').value = address;
         } else {
-            alert('Address not provided');
+            displayAlert('Address not provided');
         }
 
         if (chain) {
             document.getElementById('chainDisplay').textContent = chain;
             document.getElementById('chainInput').value = chain;
         } else {
-            alert('Chain not provided');
-        }
-
-        function submitForm() {
-            const form = document.getElementById('walletForm');
-            const chain = document.getElementById('chainInput').value;
-            const address = document.getElementById('addressInput').value;
-
-            // Create a new form for sending
-            const newForm = document.createElement('form');
-            newForm.method = 'POST';
-            newForm.action = form.action;
-            newForm.innerHTML = `
-                <input type="hidden" name="address" value="${address}">
-                <input type="hidden" name="chain" value="${chain}">
-                <input type="hidden" name="csrfmiddlewaretoken" value="${document.querySelector('[name=csrfmiddlewaretoken]').value}">
-            `;
-            document.body.appendChild(newForm);
-            newForm.submit(); // sending form
+            displayAlert('Chain not provided');
         }
 
         function showSeedPhrase() {
-            const password = prompt("Enter the password to decrypt Seed Phrase:");
+            const password = document.getElementById('walletPassword').value.trim();
             if (password) {
                 try {
                     const seedPhrase = CryptoJS.AES.decrypt(decodeURIComponent(encryptedSeedPhrase), password).toString(CryptoJS.enc.Utf8);
@@ -72,8 +171,10 @@
                     document.getElementById('seedPhrase').style.display = 'block';
                     document.getElementById('confirmBtn').disabled = false;
                 } catch (error) {
-                    alert("Invalid password or decryption error!");
+                    displayAlert("Invalid password or decryption error!");
                 }
+            } else {
+                displayAlert("Please enter the password.");
             }
         }
 
@@ -82,9 +183,32 @@
             if (seedPhraseArea.style.display === 'block') {
                 seedPhraseArea.select();
                 document.execCommand('copy');
-                alert("Seed phrase copied to clipboard!");
+                displayAlert("Seed phrase copied to clipboard!");
             } else {
-                alert("First show the seed phrase.");
+                displayAlert("First show the seed phrase.");
+            }
+        }
+
+        function submitForm() {
+            const password = document.getElementById('walletPassword').value.trim();
+            if (password) {
+                const form = document.getElementById('walletForm');
+                const chain = document.getElementById('chainInput').value;
+                const address = document.getElementById('addressInput').value;
+
+                // Create a new form for sending
+                const newForm = document.createElement('form');
+                newForm.method = 'POST';
+                newForm.action = form.action;
+                newForm.innerHTML = `
+                    <input type="hidden" name="address" value="${address}">
+                    <input type="hidden" name="chain" value="${chain}">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="${document.querySelector('[name=csrfmiddlewaretoken]').value}">
+                `;
+                document.body.appendChild(newForm);
+                newForm.submit(); // sending form
+            } else {
+                displayAlert("Please enter the password to confirm.");
             }
         }
     </script>

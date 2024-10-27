@@ -4,41 +4,184 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Wallet</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            color: #343a40;
+            font-family: 'Arial', sans-serif;
+        }
+        .container {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .main-header {
+            text-align: left;
+            margin-bottom: 40px;
+        }
+        .main-header h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+        .sub-header {
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+        .crypto-icons {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .crypto-icon {
+            border-radius: 20px;
+            background-color: #ffffff;
+            color: #343a40;
+            padding: 10px 15px;
+            text-align: center;
+            width: 120px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s;
+        }
+        .crypto-icon:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        .crypto-icon img {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 10px;
+        }
+        .btn-primary, .btn-secondary {
+            background-color: #6c757d;
+            color: #ffffff;
+            padding: 30px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 250px;
+            border: none;
+            transition: box-shadow 0.3s;
+            font-size: 1.2rem;
+        }
+        .btn-primary:hover, .btn-secondary:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        #chainSelection, #accessWallet, #createPassword {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-top: 40px;
+        }
+        label, p {
+            color: #343a40;
+        }
+        input[type="radio"] {
+            margin-right: 10px;
+        }
+        .form-control, .form-select {
+            background-color: #f8f9fa;
+            color: #343a40;
+            border: 1px solid #ced4da;
+            border-radius: 10px;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #ffffff;
+            color: #343a40;
+            border-color: #28a745;
+        }
+        .password-input, .seed-input {
+            width: 50%;
+            height: 50px;
+            font-size: 1.2rem;
+            padding: 10px;
+            border-radius: 100px;
+        }
+        button[type="button"], button[type="submit"] {
+            margin-top: 20px;
+        }
+        .logo {
+            max-width: 150px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to LordLike Crypto Wallet</h1>
+    <div class="container">
+        <div class="content">
+            <div class="main-header">
+                <h1>Create Your Own Analysis For Crypto</h1>
+                <p class="sub-header">Our mission is to serve as a source of knowledge and utilities in web 3.0 - the new era of the internet with more decentralized, transparent, and smart experience.</p>
+            </div>
 
-    <button id="createWalletBtn">Create Wallet</button>
-    <button id="accessWalletBtn">Import Wallet</button>
+            <div class="crypto-icons">
+                <div class="crypto-icon">
+                    <img src="https://img.icons8.com/color/48/000000/artificial-intelligence.png" alt="Smart Wallet">
+                    <p>Smart</p>
+                </div>
+                <div class="crypto-icon">
+                    <img src="https://img.icons8.com/color/48/000000/ethereum.png" alt="Multi-chain">
+                    <p>Multi-chain</p>
+                </div>
+                <div class="crypto-icon">
+                    <img src="https://img.icons8.com/color/48/000000/lock--v1.png" alt="Secure">
+                    <p>Secure</p>
+                </div>
+                <div class="crypto-icon">
+                    <img src="https://img.icons8.com/color/48/000000/shield.png" alt="Safe">
+                    <p>Safe</p>
+                </div>
+            </div>
 
-    <div id="chainSelection" style="display: none;">
-        <h2>Choose Blockchain:</h2>
-        <form id="chainForm" method="POST" data-create-url="{% url 'create_wallet' %}" data-import-url="{% url 'wallet_created' %}" onsubmit="return false;">
-    {% csrf_token %}
-    <input type="radio" id="evm" name="chain" value="evm" checked>
-    <label for="evm">EVM (Ethereum, Polygon, BNB Chain)</label><br>
-    <input type="radio" id="bitcoin" name="chain" value="bitcoin">
-    <label for="bitcoin">Bitcoin</label><br>
-    <button type="button" id="nextBtn">Next</button>
-</form>
+            <div class="text-center mb-4 mt-5" style="margin-top: 80px;">
+                <button id="createWalletBtn" class="btn btn-primary me-3">Create Wallet</button>
+                <button id="accessWalletBtn" class="btn btn-secondary">Import Wallet</button>
+            </div>
 
+            <div id="chainSelection" style="display: none;">
+                <h2>Choose Blockchain:</h2>
+                <form id="chainForm" method="POST" data-create-url="{% url 'create_wallet' %}" data-import-url="{% url 'wallet_created' %}" onsubmit="return false;">
+                    {% csrf_token %}
+                    <input type="radio" id="evm" name="chain" value="evm" checked>
+                    <label for="evm">EVM (Ethereum, Polygon, BNB Chain)</label><br>
+                    <input type="radio" id="bitcoin" name="chain" value="bitcoin">
+                    <label for="bitcoin">Bitcoin</label><br>
+                    <button type="button" id="nextBtn" class="btn btn-primary mt-3">Next</button>
+                </form>
+            </div>
+
+            <div id="createPassword" style="display: none;">
+                <h2>Create Password:</h2>
+                <form id="passwordForm">
+                    <div class="mb-3">
+                        <label for="walletPassword" class="form-label">Enter a password to protect your wallet:</label>
+                        <input type="password" id="walletPassword" class="form-control password-input" required>
+                    </div>
+                    <button type="button" id="createWalletFinalBtn" class="btn btn-primary mt-3">Create Wallet</button>
+                </form>
+            </div>
+
+            <div id="accessWallet" style="display: none;">
+                <h2>Access to an existing wallet</h2>
+                <p>Choose blockchain:</p>
+                <input type="radio" id="evm_import" name="chain_import" value="evm" checked>
+                <label for="evm_import">EVM (Ethereum, Polygon, BNB Chain)</label><br>
+                <input type="radio" id="bitcoin_import" name="chain_import" value="bitcoin">
+                <label for="bitcoin_import">Bitcoin</label><br>
+                <p>Enter your seed phrase or private key:</p>
+                <textarea id="recoveryInput" rows="4" class="form-control seed-input"></textarea><br>
+                <p>Enter password:</p>
+                <input type="password" id="passwordInput" class="form-control password-input"><br> <br>
+                <button id="importBtn" class="btn btn-primary mt-3">Import</button>
+            </div>
+        </div>
+        <div class="logo text-center" style="margin: 150px auto; padding-right: 300px;">
+            <img src="/static/images/Icon_white.png" alt="Logo" class="img-fluid" style="width: 400px; height: 400px; display: block; margin: 0 auto; object-fit: contain;">
+        </div>
     </div>
 
-    <div id="accessWallet" style="display: none;">
-    <h2>Access to an existing wallet</h2>
-    <p>Choose blockchain:</p>
-    <input type="radio" id="evm_import" name="chain_import" value="evm" checked>
-    <label for="evm_import">EVM (Ethereum, Polygon, BNB Chain)</label><br>
-    <input type="radio" id="bitcoin_import" name="chain_import" value="bitcoin">
-    <label for="bitcoin_import">Bitcoin</label><br>
-    <p>Enter your seed phrase or private key:</p>
-    <textarea id="recoveryInput" rows="4" cols="50"></textarea><br>
-    <p>Enter password:</p>
-    <input type="password" id="passwordInput"><br>
-    <button id="importBtn">Import</button>
-</div>
-
-
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="/static/js/bundle.js"></script>
     <script src="/static/js/bitcoinjs-lib.js"></script>
 </body>

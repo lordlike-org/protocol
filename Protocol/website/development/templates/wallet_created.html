@@ -1,312 +1,616 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wallet Created</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .buttons-container {
-            margin-top: 20px;
+        body {
+            background-color: #f8f9fa;
+            color: #343a40;
+            font-family: 'Arial', sans-serif;
         }
+
+        .container {
+            margin-top: 50px;
+            padding: 0 20px; /* Side padding for main container */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .content-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+
+        .content {
+            flex: 1;
+            margin-right: 20px;
+            max-width: 550px;
+        }
+
+        .main-header {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .main-header h2 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+
+        .form-section {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 550px;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            padding: 15px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: none;
+            transition: box-shadow 0.3s;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .btn-primary:hover,
+        .btn-secondary:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
         .wallet-button {
-            margin: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
+            margin: 15px 0;
         }
+
+        .settings-history-section {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-top: 40px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .settings-button,
+        .history-button {
+            padding: 15px 30px;
+            border-radius: 8px;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s;
+            font-size: 1rem;
+            width: 45%;
+            margin: 10px;
+        }
+
+        .settings-button:hover,
+        .history-button:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo {
+            flex: 0 0 550px; /* The logo size is fixed */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 700px;
+            margin-right: 120px;
+        }
+
+        .logo img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        /* Modal windows are hidden by default */
         .modal {
             display: none;
             position: fixed;
-            z-index: 1;
+            z-index: 1050;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
-            overflow: auto;
-            background-color: rgb(0,0,0);
-            background-color: rgba(0,0,0,0.4);
+            overflow: hidden;
+            background-color: rgba(0, 0, 0, 0.5);
             padding-top: 60px;
         }
+
         .modal-content {
-            background-color: #fefefe;
-            margin: 5% auto;
-            padding: 20px;
+            background-color: #ffffff;
+            margin: auto;
+            border-radius: 15px;
             border: 1px solid #888;
-            width: 80%;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            /* Left/Right indent added */
+            padding: 40px 20px;
         }
+
+        .modal-header {
+            border-bottom: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-footer {
+            border-top: none;
+            margin-top: 20px;
+        }
+
+        label,
+        p {
+            color: #343a40;
+        }
+
+        .form-control {
+            background-color: #f8f9fa;
+            color: #343a40;
+            border: 1px solid #ced4da;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1.1rem;
+        }
+
+        .form-control:focus {
+            background-color: #ffffff;
+            color: #343a40;
+            border-color: #28a745;
+        }
+
+        .select-token {
+            background-color: #f8f9fa;
+            color: #343a40;
+            border: 1px solid #ced4da;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 1.1rem;
+            flex: 1;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .select-token:focus {
+            background-color: #ffffff;
+            border-color: #28a745;
+        }
+
+        .token-select-container {
+            display: flex;
+            align-items: center;
+            gap: 20px; /* Space between label and selector */
+            margin-bottom: 5px; /* Spacing between selection lines */
+        }
+
         .close {
             color: #aaa;
-            float: right;
-            font-size: 28px;
+            font-size: 1.5rem;
             font-weight: bold;
+            cursor: pointer;
         }
+
         .close:hover,
         .close:focus {
             color: black;
             text-decoration: none;
-            cursor: pointer;
         }
+
         .error {
             color: red;
             font-weight: bold;
         }
     </style>
 </head>
+
 <body>
-    <h2>Wallet Created Successfully</h2>
-<p><strong>Address:</strong> {{ address }}</p>
+    <div class="container">
+        <!-- Section with balances and logo in one row -->
+        <div class="content-row">
+            <div class="content">
+                <div class="main-header">
+                    <p style="font-size: 1.25rem;"><strong>Address:</strong> {{ address }}</p>
+                </div>
 
-{% if chain == 'evm' %}
-    <h3>EVM Balances:</h3>
-    <p><strong>Ethereum (ETH):</strong> {{ balance_eth }} ETH</p>
-    <p><strong>Binance Smart Chain (BNB):</strong> {{ balance_bnb }} BNB</p>
-    <p><strong>Polygon (MATIC):</strong> {{ balance_matic }} MATIC</p>
-    <ul>
-        {% for token, balance in token_balances.items %}
-            <li><strong>{{ token }}:</strong> {{ balance }}</li>
-        {% endfor %}
-        <li><strong>USDT (Ethereum):</strong> {{ balance_usdt_eth }} USDT</li>
-        <li><strong>USDT (BSC):</strong> {{ balance_usdt_bnb }} USDT</li>
-        <li><strong>USDT (Polygon):</strong> {{ balance_usdt_matic }} USDT</li>
-    </ul>
-    <div class="buttons-container">
-        <button id="buyCryptoButton" class="wallet-button" onclick="openMoonPayWidget()">Buy Crypto</button>
-        <button class="wallet-button" onclick="showSelectionModal()">Send</button>
-        <button id="selectChainButton" class="wallet-button">Swap Tokens</button>
-    </div>
-{% elif chain == 'bitcoin' %}
-    <h3>Bitcoin Balance:</h3>
-    <p><strong>Bitcoin (BTC):</strong> {{ balance_btc }} BTC</p>
-    <div class="buttons-container">
-        <button class="wallet-button" onclick="showModal('btc')">Send Bitcoin</button>
-    </div>
-{% endif %}
+                <div class="form-section">
+                    {% if chain == 'evm' %}
+                    <h3>EVM Balances:</h3>
+                    <p><strong>Ethereum (ETH):</strong> {{ balance_eth }} ETH</p>
+                    <p><strong>Binance Smart Chain (BNB):</strong> {{ balance_bnb }} BNB</p>
+                    <p><strong>Polygon (MATIC):</strong> {{ balance_matic }} MATIC</p>
+                    <ul>
+                        {% for token, balance in token_balances.items %}
+                        <li><strong>{{ token }}:</strong> {{ balance }}</li>
+                        {% endfor %}
+                        <li><strong>USDT (Ethereum):</strong> {{ balance_usdt_eth }} USDT</li>
+                        <li><strong>USDT (BSC):</strong> {{ balance_usdt_bnb }} USDT</li>
+                        <li><strong>USDT (Polygon):</strong> {{ balance_usdt_matic }} USDT</li>
+                    </ul>
+                    <div class="buttons-container mt-4 text-center">
+                        <button id="buyCryptoButton" class="btn btn-primary wallet-button" onclick="openMoonPayWidget()">Buy Crypto</button>
+                        <button class="btn btn-secondary wallet-button" onclick="showModal('selection')">Send</button>
+                        <button id="selectChainButton" class="btn btn-secondary wallet-button" onclick="showModal('chainSelection')">Swap Tokens</button>
+                    </div>
+                    {% elif chain == 'bitcoin' %}
+                    <h3>Bitcoin Balance:</h3>
+                    <p><strong>Bitcoin (BTC):</strong> {{ balance_btc }} BTC</p>
+                    <div class="buttons-container mt-4 text-center">
+                        <button class="btn btn-secondary wallet-button" onclick="showModal('btc')">Send Bitcoin</button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
 
+            <div class="logo">
+                <img src="/static/images/Icon_white.png" alt="Logo" class="img-fluid">
+            </div>
+        </div>
+
+    <!-- section "Settings" & "History Transactions" buttons -->
+
+        <div class="settings-history-section">
+            <button id="settingsButton" class="settings-button btn btn-secondary" onclick="openSettings()">Settings</button>
+            <button id="historyButton" class="history-button btn btn-secondary" onclick="openHistory()">History Transactions</button>
+            <button id="QrCodeButton" class="QrCodeButton-button btn btn-secondary" onclick="QrCodeButton()">Qr-Code</button>
+        </div>
+    </div>
+
+    <!-- Modals -->
     <!-- Chain Selection Modal -->
     <div id="chainSelectionModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('chainSelectionModal')">&times;</span>
-            <h2>Select Chain</h2>
-            <button id="selectEthChainButton" class="wallet-button">Ethereum</button>
-            <button id="selectPolygonChainButton" class="wallet-button">Polygon</button>
-            <button id="selectBscChainButton" class="wallet-button">BSC</button>
+            <h3>Select Chain</h3>
+            <button id="selectEthChainButton" class="btn btn-secondary my-2 w-100" onclick="showModal('swapEth')">Ethereum</button>
+            <button id="selectPolygonChainButton" class="btn btn-secondary my-2 w-100" onclick="showModal('swapPolygon')">Polygon</button>
+            <button id="selectBscChainButton" class="btn btn-secondary my-2 w-100" onclick="showModal('swapBsc')">BSC</button>
         </div>
     </div>
 
-    <!-- Selection Modal -->
-    <div id="selectionModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('selectionModal')">&times;</span>
-            <h2>Select what to send</h2>
-            <button class="wallet-button" onclick="showModal('eth')">ETH</button>
-            <button class="wallet-button" onclick="showModal('bnb')">BNB</button>
-            <button class="wallet-button" onclick="showModal('matic')">MATIC</button>
-            <button class="wallet-button" onclick="showModal('usdt_eth')">USDT (Ethereum)</button>
-            <button class="wallet-button" onclick="showModal('usdt_bnb')">USDT (BSC)</button>
-            <button class="wallet-button" onclick="showModal('usdt_matic')">USDT (Polygon)</button>
+   <!-- Selection Modal -->
+<div id="selectionModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('selectionModal')">&times;</span>
+        <h3 class="mb-4">Select what to send</h3>
+        <div class="button-group mb-4">
+            <button class="btn btn-secondary mx-2 my-3 w-500" onclick="showModal('eth')">ETH</button>
+            <button class="btn btn-secondary mx-2 my-3 w-500" onclick="showModal('bnb')">BNB</button>
+            <button class="btn btn-secondary mx-2 my-3 w-500" onclick="showModal('matic')">MATIC</button>
+        </div>
+        <br class="my-4">
+        <div class="button-group">
+            <button class="btn btn-secondary mx-2 my-3 w-500" onclick="showModal('usdt_eth')">USDT (Ethereum)</button>
+            <button class="btn btn-secondary mx-2 my-3 w-500" onclick="showModal('usdt_bnb')">USDT (BSC)</button>
+            <button class="btn btn-secondary mx-2 my-3 w-500" onclick="showModal('usdt_matic')">USDT (Polygon)</button>
         </div>
     </div>
+</div>
 
-    <!-- Modal window for sending ETH -->
-    <div id="ethModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('ethModal')">&times;</span>
-            <h2>Send ETH</h2>
-            <p>Recipient Address:</p>
-            <input type="text" id="ethRecipient" />
-            <p>Amount in ETH:</p>
-            <input type="number" id="ethAmount" oninput="updateUsdEquivalent('eth'); calculateGas('eth'); checkFunds('eth');" />
+<!-- Modal window for sending ETH -->
+<div id="ethModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Send ETH</h4>
+            <button type="button" class="close" onclick="closeModal('ethModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <label for="ethRecipient" class="form-label">Recipient Address:</label>
+            <input type="text" id="ethRecipient" class="form-control mb-4">
+<br> <br>
+            <label for="ethAmount" class="form-label">Amount in ETH:</label>
+            <input type="number" id="ethAmount" class="form-control mb-4" oninput="updateUsdEquivalent('eth'); calculateGas('eth'); checkFunds('eth');">
+<br> <br>
             <p>Equivalent in USD: <span id="ethUsdEquivalent">0.00</span></p>
             <p>Gas Fee: <span id="ethGasFee">0.00</span> ETH (<span id="ethGasFeeUsd">0.00</span> USD)</p>
             <p>Total with Gas: <span id="ethTotalWithGas">0.00</span> ETH (<span id="ethTotalWithGasUsd">0.00</span> USD)</p>
+
             <p class="error" id="ethFundsError" style="display:none;">Insufficient funds for the transaction.</p>
-            <p>Enter password:</p>
-            <input type="password" id="ethPassword" /><br>
-            <button onclick="sendETH()">Send</button>
+
+            <label for="ethPassword" class="form-label">Enter password:</label>
+            <input type="password" id="ethPassword" class="form-control mb-4">
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" onclick="sendETH()">Send</button>
         </div>
     </div>
+</div>
 
-    <!-- Modal window for sending BNB -->
-    <div id="bnbModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('bnbModal')">&times;</span>
-            <h2>Send BNB</h2>
-            <p>Recipient Address:</p>
-            <input type="text" id="bnbRecipient" />
-            <p>Amount in BNB:</p>
-            <input type="number" id="bnbAmount" oninput="updateUsdEquivalent('bnb'); calculateGas('bnb'); checkFunds('bnb');" />
+<!-- Modal window for sending BNB -->
+<div id="bnbModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Send BNB</h4>
+            <button type="button" class="close" onclick="closeModal('bnbModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <label for="bnbRecipient" class="form-label">Recipient Address:</label>
+            <input type="text" id="bnbRecipient" class="form-control mb-4"> <br> <br>
+
+            <label for="bnbAmount" class="form-label">Amount in BNB:</label>
+            <input type="number" id="bnbAmount" class="form-control mb-4" oninput="updateUsdEquivalent('bnb'); calculateGas('bnb'); checkFunds('bnb');">
+<br> <br>
             <p>Equivalent in USD: <span id="bnbUsdEquivalent">0.00</span></p>
             <p>Gas Fee: <span id="bnbGasFee">0.00</span> BNB (<span id="bnbGasFeeUsd">0.00</span> USD)</p>
             <p>Total with Gas: <span id="bnbTotalWithGas">0.00</span> BNB (<span id="bnbTotalWithGasUsd">0.00</span> USD)</p>
+
             <p class="error" id="bnbFundsError" style="display:none;">Insufficient funds for the transaction.</p>
-            <p>Enter password:</p>
-            <input type="password" id="bnbPassword" /><br>
-            <button onclick="sendBNB()">Send</button>
+
+            <label for="bnbPassword" class="form-label">Enter password:</label>
+            <input type="password" id="bnbPassword" class="form-control mb-4">
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" onclick="sendBNB()">Send</button>
         </div>
     </div>
+</div>
 
-    <!-- Modal window for sending MATIC -->
-    <div id="maticModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('maticModal')">&times;</span>
-            <h2>Send MATIC</h2>
-            <p>Recipient Address:</p>
-            <input type="text" id="maticRecipient" />
-            <p>Amount in MATIC:</p>
-            <input type="number" id="maticAmount" oninput="updateUsdEquivalent('matic'); calculateGas('matic'); checkFunds('matic');" />
+<!-- Modal window for sending MATIC -->
+<div id="maticModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Send MATIC</h4>
+            <button type="button" class="close" onclick="closeModal('maticModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <label for="maticRecipient" class="form-label">Recipient Address:</label>
+            <input type="text" id="maticRecipient" class="form-control mb-4">
+<br> <br>
+            <label for="maticAmount" class="form-label">Amount in MATIC:</label>
+            <input type="number" id="maticAmount" class="form-control mb-4" oninput="updateUsdEquivalent('matic'); calculateGas('matic'); checkFunds('matic');">
+<br> <br>
             <p>Equivalent in USD: <span id="maticUsdEquivalent">0.00</span></p>
             <p>Gas Fee: <span id="maticGasFee">0.00</span> MATIC (<span id="maticGasFeeUsd">0.00</span> USD)</p>
             <p>Total with Gas: <span id="maticTotalWithGas">0.00</span> MATIC (<span id="maticTotalWithGasUsd">0.00</span> USD)</p>
+
             <p class="error" id="maticFundsError" style="display:none;">Insufficient funds for the transaction.</p>
-            <p>Enter password:</p>
-            <input type="password" id="maticPassword" /><br>
-            <button onclick="sendMATIC()">Send</button>
+
+            <label for="maticPassword" class="form-label">Enter password:</label>
+            <input type="password" id="maticPassword" class="form-control mb-4">
         </div>
-    </div>
-
-    <!-- Modal window for sending USDT on Ethereum -->
-    <div id="usdt_ethModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('usdt_ethModal')">&times;</span>
-            <h2>Send USDT (Ethereum)</h2>
-            <p>Recipient Address:</p>
-            <input type="text" id="usdt_ethRecipient" />
-            <p>Amount in USDT:</p>
-            <input type="number" id="usdt_ethAmount" oninput="calculateUsdtGas('eth');" />
-            <p>Gas Fee: <span id="usdt_ethGasFee">0.00</span> ETH (<span id="usdt_ethGasFeeUsd">0.00</span> USD)</p>
-            <p>Total with Gas: <span id="usdt_ethTotalWithGas">0.00</span> USDT</p>
-            <p>Enter password:</p>
-            <input type="password" id="usdt_ethPassword" /><br>
-            <button onclick="sendUSDT('eth')">Send</button>
+        <div class="modal-footer">
+            <button class="btn btn-primary" onclick="sendMATIC()">Send</button>
         </div>
-    </div>
-
-    <!-- Modal window for sending USDT on BSC -->
-    <div id="usdt_bnbModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('usdt_bnbModal')">&times;</span>
-            <h2>Send USDT (BSC)</h2>
-            <p>Recipient Address:</p>
-            <input type="text" id="usdt_bnbRecipient" />
-            <p>Amount in USDT:</p>
-            <input type="number" id="usdt_bnbAmount" oninput="calculateUsdtGas('bnb');" />
-            <p>Gas Fee: <span id="usdt_bnbGasFee">0.00</span> BNB (<span id="usdt_bnbGasFeeUsd">0.00</span> USD)</p>
-            <p>Total with Gas: <span id="usdt_bnbTotalWithGas">0.00</span> USDT</p>
-            <p>Enter password:</p>
-            <input type="password" id="usdt_bnbPassword" /><br>
-            <button onclick="sendUSDT('bnb')">Send</button>
-        </div>
-    </div>
-
-    <!-- Modal window for sending USDT on Polygon -->
-    <div id="usdt_maticModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('usdt_maticModal')">&times;</span>
-            <h2>Send USDT (Polygon)</h2>
-            <p>Recipient Address:</p>
-            <input type="text" id="usdt_maticRecipient" />
-            <p>Amount in USDT:</p>
-            <input type="number" id="usdt_maticAmount" oninput="calculateUsdtGas('matic');" />
-            <p>Gas Fee: <span id="usdt_maticGasFee">0.00</span> MATIC (<span id="usdt_maticGasFeeUsd">0.00</span> USD)</p>
-            <p>Total with Gas: <span id="usdt_maticTotalWithGas">0.00</span> USDT</p>
-            <p>Enter password:</p>
-            <input type="password" id="usdt_maticPassword" /><br>
-            <button onclick="sendUSDT('matic')">Send</button>
-        </div>
-    </div>
-
-    <!-- Swap Eth Modal -->
-    <div id="swapEthModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('swapEthModal')">&times;</span>
-            <h2>Swap Tokens</h2>
-
-            <label for="from-token-select">From Token:</label>
-            <select id="from-token-select">
-                <option value="" disabled selected>Select token</option>
-                <!-- Tokens will be loaded dynamically -->
-            </select>
-
-            <input type="number" id="from-amount" placeholder="Enter amount" />
-
-            <label for="to-token-select">To Token:</label>
-            <select id="to-token-select">
-                <option value="" disabled selected>Select token</option>
-                <!-- Tokens will be loaded dynamically -->
-            </select>
-
-            <button id="confirmSwapEthButton" class="wallet-button">Swap</button>
-        </div>
-    </div>
-
-    <!-- Swap Modal for Polygon -->
-    <div id="swapPolygonModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('swapPolygonModal')">&times;</span>
-            <h2>Swap Tokens on Polygon</h2>
-
-            <label for="from-token-select-polygon">From Token:</label>
-            <select id="from-token-select-polygon">
-                <option value="" disabled selected>Select token</option>
-                <!-- Tokens will be loaded dynamically -->
-            </select>
-
-            <input type="number" id="from-amount-polygon" placeholder="Enter amount" />
-
-            <label for="to-token-select-polygon">To Token:</label>
-            <select id="to-token-select-polygon">
-                <option value="" disabled selected>Select token</option>
-                <!-- Tokens will be loaded dynamically -->
-            </select>
-
-            <!-- Placeholder for error messages -->
-            <p id="swap-error-message" class="error" style="display:none;">Please fill in all fields.</p>
-
-            <button id="confirmSwapPolygonButton" class="wallet-button">Swap</button>
-        </div>
-    </div>
-
-    <!-- Swap Modal for BSC -->
-    <div id="swapBscModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('swapBscModal')">&times;</span>
-            <h2>Swap Tokens on BSC</h2>
-
-            <label for="from-token-select-bsc">From Token:</label>
-            <select id="from-token-select-bsc">
-                <option value="" disabled selected>Select token</option>
-                <!-- Tokens will be loaded dynamically -->
-            </select>
-
-            <input type="number" id="from-amount-bsc" placeholder="Enter amount" />
-
-            <label for="to-token-select-bsc">To Token:</label>
-            <select id="to-token-select-bsc">
-                <option value="" disabled selected>Select token</option>
-                <!-- Tokens will be loaded dynamically -->
-            </select>
-
-            <button id="confirmSwapBscButton" class="wallet-button">Swap</button>
-        </div>
-    </div>
-
-    <!-- Modal window for sending BTC (already added in the code) -->
-<div id="btcModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal('btcModal')">&times;</span>
-        <h2>Send BTC</h2>
-        <p>Recipient Address:</p>
-        <input type="text" id="btcRecipient" />
-        <p>Amount in BTC:</p>
-        <input type="number" id="btcAmount" />
-        <p>Enter password:</p>
-        <input type="password" id="btcPassword" /><br>
-        <button id="sendBtcButton" onclick="sendBTC()">Send</button>
     </div>
 </div>
 
 
-<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<!-- Modal window for sending USDT on Ethereum -->
+<div id="usdt_ethModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Send USDT (Ethereum)</h4>
+            <button type="button" class="close" onclick="closeModal('usdt_ethModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <label for="usdt_ethRecipient" class="form-label">Recipient Address:</label>
+            <input type="text" id="usdt_ethRecipient" class="form-control mb-3">
+<br> <br>
+            <label for="usdt_ethAmount" class="form-label">Amount in USDT:</label>
+            <input type="number" id="usdt_ethAmount" class="form-control mb-3" oninput="calculateUsdtGas('eth');">
+<br> <br>
+            <p>Gas Fee: <span id="usdt_ethGasFee">0.00</span> ETH (<span id="usdt_ethGasFeeUsd">0.00</span> USD)</p>
+            <p>Total with Gas: <span id="usdt_ethTotalWithGas">0.00</span> USDT</p>
+
+            <label for="usdt_ethPassword" class="form-label">Enter password:</label>
+            <input type="password" id="usdt_ethPassword" class="form-control mb-3">
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary w-100" onclick="sendUSDT('eth')">Send</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal window for sending USDT on BSC -->
+<div id="usdt_bnbModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Send USDT (BSC)</h4>
+            <button type="button" class="close" onclick="closeModal('usdt_bnbModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <label for="usdt_bnbRecipient" class="form-label">Recipient Address:</label>
+            <input type="text" id="usdt_bnbRecipient" class="form-control mb-3">
+<br> <br>
+            <label for="usdt_bnbAmount" class="form-label">Amount in USDT:</label>
+            <input type="number" id="usdt_bnbAmount" class="form-control mb-3" oninput="calculateUsdtGas('bnb');">
+<br> <br>
+            <p>Gas Fee: <span id="usdt_bnbGasFee">0.00</span> BNB (<span id="usdt_bnbGasFeeUsd">0.00</span> USD)</p>
+            <p>Total with Gas: <span id="usdt_bnbTotalWithGas">0.00</span> USDT</p>
+
+            <label for="usdt_bnbPassword" class="form-label">Enter password:</label>
+            <input type="password" id="usdt_bnbPassword" class="form-control mb-3">
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary w-100" onclick="sendUSDT('bnb')">Send</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal window for sending USDT on Polygon -->
+<div id="usdt_maticModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Send USDT (Polygon)</h4>
+            <button type="button" class="close" onclick="closeModal('usdt_maticModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <label for="usdt_maticRecipient" class="form-label">Recipient Address:</label>
+            <input type="text" id="usdt_maticRecipient" class="form-control mb-3">
+<br> <br>
+            <label for="usdt_maticAmount" class="form-label">Amount in USDT:</label>
+            <input type="number" id="usdt_maticAmount" class="form-control mb-3" oninput="calculateUsdtGas('matic');">
+<br> <br>
+            <p>Gas Fee: <span id="usdt_maticGasFee">0.00</span> MATIC (<span id="usdt_maticGasFeeUsd">0.00</span> USD)</p>
+            <p>Total with Gas: <span id="usdt_maticTotalWithGas">0.00</span> USDT</p>
+
+            <label for="usdt_maticPassword" class="form-label">Enter password:</label>
+            <input type="password" id="usdt_maticPassword" class="form-control mb-3">
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary w-100" onclick="sendUSDT('matic')">Send</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- Swap Eth Modal -->
+<div id="swapEthModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Swap Tokens on Ethereum</h3>
+            <button type="button" class="close" onclick="closeModal('swapEthModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="token-select-container">
+                <label for="from-token-select" class="form-label">From Token:</label>
+                <select id="from-token-select" class="select-token form-control">
+                    <option value="" disabled selected>Select token</option>
+                    <!-- Tokens will be loaded dynamically -->
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="from-amount" class="form-label">Enter Amount:</label>
+                <input type="number" id="from-amount" class="form-control" placeholder="Enter amount">
+            </div>
+            <br>
+            <div class="token-select-container">
+                <label for="to-token-select" class="form-label">To Token:</label>
+                <select id="to-token-select" class="select-token form-control">
+                    <option value="" disabled selected>Select token</option>
+                    <!-- Tokens will be loaded dynamically -->
+                </select>
+            </div>
+            <div class="mt-4">
+                <label for="swapEthPassword" class="form-label">Enter password:</label>
+                <input type="password" id="swapEthPassword" class="form-control mb-3">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="confirmSwapEthButton" class="btn btn-primary w-100" onclick="confirmSwap('eth')">Swap</button>
+        </div>
+    </div>
+</div>
+
+<!-- Swap Modal for Polygon -->
+<div id="swapPolygonModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Swap Tokens on Polygon</h4>
+            <button type="button" class="close" onclick="closeModal('swapPolygonModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="token-select-container">
+                <label for="from-token-select-polygon" class="form-label">From Token:</label>
+                <select id="from-token-select-polygon" class="select-token form-control">
+                    <option value="" disabled selected>Select token</option>
+                    <!-- Tokens will be loaded dynamically -->
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="from-amount-polygon" class="form-label">Enter Amount:</label>
+                <input type="number" id="from-amount-polygon" class="form-control" placeholder="Enter amount">
+            </div>
+            <br>
+            <div class="token-select-container">
+                <label for="to-token-select-polygon" class="form-label">To Token:</label>
+                <select id="to-token-select-polygon" class="select-token form-control">
+                    <option value="" disabled selected>Select token</option>
+                    <!-- Tokens will be loaded dynamically -->
+                </select>
+            </div>
+            <div class="mt-4">
+                <label for="swapPolygonPassword" class="form-label">Enter password:</label>
+                <input type="password" id="swapPolygonPassword" class="form-control mb-3">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="confirmSwapPolygonButton" class="btn btn-primary w-100" onclick="confirmSwap('polygon')">Swap</button>
+        </div>
+    </div>
+</div>
+
+<!-- Swap Modal for BSC -->
+<div id="swapBscModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Swap Tokens on BSC</h4>
+            <button type="button" class="close" onclick="closeModal('swapBscModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="token-select-container">
+                <label for="from-token-select-bsc" class="form-label">From Token:</label>
+                <select id="from-token-select-bsc" class="select-token form-control">
+                    <option value="" disabled selected>Select token</option>
+                    <!-- Tokens will be loaded dynamically -->
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="from-amount-bsc" class="form-label">Enter Amount:</label>
+                <input type="number" id="from-amount-bsc" class="form-control" placeholder="Enter amount">
+            </div>
+            <br>
+            <div class="token-select-container">
+                <label for="to-token-select-bsc" class="form-label">To Token:</label>
+                <select id="to-token-select-bsc" class="select-token form-control">
+                    <option value="" disabled selected>Select token</option>
+                    <!-- Tokens will be loaded dynamically -->
+                </select>
+            </div>
+            <div class="mt-4">
+                <label for="swapBscPassword" class="form-label">Enter password:</label>
+                <input type="password" id="swapBscPassword" class="form-control mb-3">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="confirmSwapBscButton" class="btn btn-primary w-100" onclick="confirmSwap('bsc')">Swap</button>
+        </div>
+    </div>
+</div>
+
+
+    <!-- Modal window for sending BTC -->
+<div id="btcModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Send BTC</h3>
+            <button type="button" class="close" onclick="closeModal('btcModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <label for="btcRecipient" class="form-label">Recipient Address:</label>
+            <input type="text" id="btcRecipient" class="form-control mb-3">
+            <br><br>
+            <label for="btcAmount" class="form-label">Amount in BTC:</label>
+            <input type="number" id="btcAmount" class="form-control mb-3">
+            <br><br>
+            <label for="btcPassword" class="form-label">Enter password:</label>
+            <input type="password" id="btcPassword" class="form-control mb-3">
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary w-100" onclick="sendBTC()">Send</button>
+        </div>
+    </div>
+</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@uniswap/sdk@3.0.3/dist/uniswap-sdk.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 
 
     <script>
@@ -448,37 +752,46 @@
         }
 
         function showModal(type) {
-            closeModal('selection');
-            const modal = document.getElementById(type + 'Modal');
-            modal.style.display = 'block';
-            if (type === 'eth' || type === 'bnb' || type === 'matic' || type.startsWith('usdt')) {
-                fetchUsdRates().then(() => {
-                    fetchGasPrice(type.replace('usdt_', '')).then(() => {
-                        console.log('Gas price fetched and modal shown for:', type);
-                        if (type.startsWith('usdt')) {
-                            calculateUsdtGas(type.replace('usdt_', ''));
-                        } else {
-                            calculateGas(type);
-                        }
-                    });
-                });
-            }
-        }
+    closeModal('selection'); // Закрыть окно выбора перед показом нового окна
+
+    const modal = document.getElementById(type + 'Modal');
+    if (modal) {
+        modal.style.display = 'block'; // Показать модальное окно
+    } else {
+        console.error("Modal with id " + type + " not found");
+    }
+
+    // Если модальное окно связано с цепочками (ETH, BNB, MATIC или USDT)
+    if (type === 'eth' || type === 'bnb' || type === 'matic' || type.startsWith('usdt')) {
+        fetchUsdRates().then(() => {
+            fetchGasPrice(type.replace('usdt_', '')).then(() => {
+                console.log('Gas price fetched and modal shown for:', type);
+                if (type.startsWith('usdt')) {
+                    calculateUsdtGas(type.replace('usdt_', ''));
+                } else {
+                    calculateGas(type);
+                }
+            });
+        });
+    }
+}
 
         function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
-        modal.style.display = 'none';
+        modal.style.display = 'none'; // Скрыть модальное окно
     } else {
         console.error("Modal with id " + modalId + " not found");
     }
 }
 
-        window.onclick = function(event) {
-            if (event.target.className === 'modal') {
-                event.target.style.display = "none";
-            }
-        }
+// Закрытие модального окна при клике на его область
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.style.display = "none";
+    }
+};
+
 
         document.addEventListener('DOMContentLoaded', (event) => {
             fetchUsdRates(); // Fetch the USD rates when the page loads
@@ -824,7 +1137,8 @@
 
         const provider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/a4c60cf1bd7e4c288d9221144f9efbe2');
 
-        const password = prompt("Enter your password to decrypt the private key:");
+        const password = document.getElementById('swapEthPassword').value;
+
 
         let decryptedPrivateKey;
         try {
@@ -946,7 +1260,8 @@
 
     const provider = new ethers.providers.JsonRpcProvider(RPC_URLS['matic']);
 
-    const password = prompt("Enter the password to decrypt the private key:");
+    const password = document.getElementById('swapPolygonPassword').value;
+
     let decryptedPrivateKey;
     try {
         decryptedPrivateKey = CryptoJS.AES.decrypt(encryptedKey, password).toString(CryptoJS.enc.Utf8);
@@ -1065,7 +1380,8 @@
 
         const provider = new ethers.providers.JsonRpcProvider(RPC_URLS['bsc']);
 
-        const password = prompt("Enter the password to decrypt the private key:");
+        const password = document.getElementById('swapBscPassword').value;
+
         let decryptedPrivateKey;
         try {
             decryptedPrivateKey = CryptoJS.AES.decrypt(encryptedKey, password).toString(CryptoJS.enc.Utf8);
