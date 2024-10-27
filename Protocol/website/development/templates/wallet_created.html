@@ -19,6 +19,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            max-width: 100%;
+            box-sizing: border-box; /* Ensure padding is included in width calculations */
         }
 
         .content-row {
@@ -27,12 +29,14 @@
             justify-content: space-between;
             width: 100%;
             margin-bottom: 40px;
+            flex-wrap: wrap; /* Allow elements to wrap on smaller screens */
         }
 
         .content {
             flex: 1;
             margin-right: 20px;
-            max-width: 550px;
+            max-width: 100%;
+            box-sizing: border-box; /* Ensure padding is included in width calculations */
         }
 
         .main-header {
@@ -53,6 +57,7 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 550px;
+            box-sizing: border-box; /* Ensure padding is included in width calculations */
         }
 
         .btn-primary,
@@ -107,7 +112,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 700px;
+            height: 650px;
             margin-right: 120px;
         }
 
@@ -139,7 +144,6 @@
             width: 90%;
             max-width: 600px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            /* Left/Right indent added */
             padding: 40px 20px;
         }
 
@@ -225,6 +229,35 @@
             border-radius: 5px;
             display: none;
         }
+
+        /* Mobile specific styling */
+        @media (max-width: 768px) {
+            .content-row {
+                flex-direction: column; /* Stacks the logo below the content on mobile */
+                align-items: center; /* Centers items in the column */
+            }
+
+            .content {
+                margin-right: 0; /* Remove right margin for mobile */
+                margin-bottom: 20px; /* Add some bottom margin to separate from logo */
+                width: 100%;
+            }
+
+            .logo {
+                width: 100%;
+                margin-bottom: 20px; /* Add bottom margin for spacing */
+                height: auto;
+            }
+
+            .form-section {
+                width: 100%; /* Ensure the form takes full width on mobile */
+                max-width: 100%; /* Remove the max-width for mobile */
+            }
+
+            .settings-history-section {
+                width: 100%; /* Make the settings section take full width on mobile */
+            }
+        }
     </style>
 </head>
 
@@ -270,6 +303,7 @@
                 <img src="/static/images/Icon_white.png" alt="Logo" class="img-fluid">
             </div>
         </div>
+
 
     <!-- section "Settings" & "History Transactions" buttons -->
 
