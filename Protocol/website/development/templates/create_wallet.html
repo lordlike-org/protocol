@@ -91,6 +91,41 @@
             border-radius: 5px;
             display: none;
         }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column; /* Stack elements vertically for mobile */
+                align-items: center; /* Center align elements */
+                padding: 0 15px; /* Ensure proper padding for mobile devices to avoid cutting off */
+                width: 100%; /* Ensure container takes full width */
+            }
+
+            .content {
+                width: 100%; /* Ensure full width for content on mobile */
+            }
+
+            .logo {
+                order: 2; /* Place logo below the content section */
+                padding-right: 0; /* Remove right padding on mobile */
+                margin-top: 20px; /* Add some margin for spacing */
+                width: 100%; /* Ensure full width for logo container on mobile */
+            }
+
+            .btn-primary, .btn-secondary {
+                width: 100%; /* Make buttons take the full width of the container */
+                max-width: 300px; /* Limit the maximum width of buttons on mobile */
+            }
+
+            .main-header h1 {
+                font-size: 2rem; /* Reduce font size for mobile */
+            }
+
+            .crypto-icon img {
+                width: 30px; /* Reduce image size for mobile */
+                height: 30px; /* Reduce image height for mobile */
+            }
+        }
+
     </style>
 </head>
 <body>
